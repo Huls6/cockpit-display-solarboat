@@ -69,32 +69,49 @@ void app_main(void)
         drawText("|",i,98);
     }
     drawEmoji("E",0,108);
-    drawText("100%",1,102);
+    drawText("%",1,120);
 
     drawText("Temp:", 0, 1);
-    drawText("75*C",1,5);
+    drawText("*C",1,18);
 
     drawText("Hoek:", 4,1);
-    drawText("10*", 5,5);
+    drawText("*", 5,18);
 
-    init();
-    vTaskDelay(pdMS_TO_TICKS(3000));
-    ESP_LOGI(TAG, "Start GPS test...");
+    uint8_t cnt = 0;
 
-    // Zet GPS aan
-    ESP_LOGI(TAG, "GPS inschakelen...");
-    sendATCommand("AT+CGNSPWR=1");
-    vTaskDelay(pdMS_TO_TICKS(2000));
+    while (1) {
 
-    // Vraag GPS-data op
-    ESP_LOGI(TAG, "GPS info opvragen...");
-    sendATCommand("AT+CGNSINF");
-    vTaskDelay(pdMS_TO_TICKS(500));
-    readResponse();
-    vTaskDelay(pdMS_TO_TICKS(1000));  // Wacht 1 seconde na elke commando-uitvoering
-    sendATCommand("AT+CSQ");
-    readResponse();
-    vTaskDelay(pdMS_TO_TICKS(3000));  // Wacht 1 seconde na elke commando-uitvoering
+        drawNumber(cnt, 1, 50);
+        drawNumber(cnt,1,1);
+        drawNumber(cnt, 5,1);
+        drawNumber(cnt,1,102);
+        vTaskDelay(pdMS_TO_TICKS(200));
+
+        cnt++;
+        if (cnt >= 200) {
+            cnt=0;
+        }
+    }
+
+
+    // init();
+    // vTaskDelay(pdMS_TO_TICKS(3000));
+    // ESP_LOGI(TAG, "Start GPS test...");
+    //
+    // // Zet GPS aan
+    // ESP_LOGI(TAG, "GPS inschakelen...");
+    // sendATCommand("AT+CGNSPWR=1");
+    // vTaskDelay(pdMS_TO_TICKS(2000));
+    //
+    // // Vraag GPS-data op
+    // ESP_LOGI(TAG, "GPS info opvragen...");
+    // sendATCommand("AT+CGNSINF");
+    // vTaskDelay(pdMS_TO_TICKS(500));
+    // readResponse();
+    // vTaskDelay(pdMS_TO_TICKS(1000));  // Wacht 1 seconde na elke commando-uitvoering
+    // sendATCommand("AT+CSQ");
+    // readResponse();
+    // vTaskDelay(pdMS_TO_TICKS(3000));  // Wacht 1 seconde na elke commando-uitvoering
 }
 
 

@@ -53,7 +53,7 @@ void initDisplay() {
 void clearScreen() {
     gpioWriteOutput(CS1, 1);
     gpioWriteOutput(CS2, 1);
-    for (int page = 0; page < 8; page++) {
+    for (int page = 0; page <= DISPLAY_ROWS; page++) {
         sendCommand(0x00B8 | page); // Pagina selecteren
         sendCommand(0x0040);        // Zet cursor aan begin
         for (int col = 0; col < 64; col++) {
@@ -65,20 +65,27 @@ void clearScreen() {
 //functie om cursor op de plek te zetten.
 void setCursor(uint8_t row, uint8_t offset)
 {
+    #ifdef DISPLAY_UPSIDEDOWN
+        row = DISPLAY_ROWS-row;
+        offset = DISPLAY_WIDTH-offset;
+    #endif
     bool check1 = true;
     bool check2 = false;
     uint8_t column = offset;
-    if (row > 7)
+    if (row > DISPLAY_ROWS)
     {
-        row = 7;
+        row = DISPLAY_ROWS;
     }
-    if (offset > 63 && offset <= 127)
+    if (offset > 63 && offset <= DISPLAY_WIDTH)
     {
+        #ifdef DISPLAY_UPSIDEDOWN
+        #else
         column = offset - 63;
+        #endif
         check1 = false;
         check2 = true;
     }
-    else if (offset > 127)
+    else if (offset > DISPLAY_WIDTH)
     {
         column = 0;
     }
@@ -91,7 +98,7 @@ void setCursor(uint8_t row, uint8_t offset)
 }
 
 
-// Simpele functie om tekst weer te geven (geen font-rendering)
+//Simpele functie om tekst weer te geven
 void drawText(const char* text, uint8_t row, uint8_t offset) {
     uint8_t cnt = offset;
     size_t size;
@@ -101,22 +108,45 @@ void drawText(const char* text, uint8_t row, uint8_t offset) {
         for (size_t y = 0; y < size; y++) {
             setCursor(row, cnt);
             cnt++;
-            sendData(bitmap[y]);
+            #ifdef DISPLAY_UPSIDEDOWN
+                sendData(reverseBits(bitmap[y]));
+            #else
+                sendData(bitmap[y]);
+            #endif
         }
     }
 }
 
+void drawNumber(const uint16_t cnt, uint8_t row, uint8_t offset) {
+    char character[10];
+    snprintf(character, sizeof(character), "%-3u", cnt);
+    drawText(character, row, offset);
+}
+
 void drawEmoji(const char* text, uint8_t row, uint8_t offset) {
-    uint8_t cnt = offset;
     size_t size;
+    uint8_t cnt = offset;
     const uint8_t* bitmap = 0;
     for (uint32_t i = 0; i < strlen(text); i++) {
         bitmap = getEmojiBitmap(text[i],&size);
         for (size_t y = 0; y < size; y++) {
             setCursor(row, cnt);
             cnt++;
-            sendData(bitmap[y]);
+            #ifdef DISPLAY_UPSIDEDOWN
+                sendData(reverseBits(bitmap[y]));
+            #else
+                sendData(bitmap[y]);
+            #endif
         }
     }
 }
+
+uint8_t reverseBits(uint8_t byte) {
+    byte = (byte & 0xF0) >> 4 | (byte & 0x0F) << 4;
+    byte = (byte & 0xCC) >> 2 | (byte & 0x33) << 2;
+    byte = (byte & 0xAA) >> 1 | (byte & 0x55) << 1;
+    return byte;
+}
+
+
 
