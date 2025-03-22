@@ -1,5 +1,5 @@
 //
-// Created by pi on 2/25/25.
+// Created by Thijs Hulshof
 //
 
 #ifndef BITMAPDISPLAY_H

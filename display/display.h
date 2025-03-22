@@ -1,5 +1,5 @@
 //
-// Created by pi on 2/14/25.
+// Created by Thijs Hulshof
 //
 
 #ifndef DISPLAY_H
@@ -13,14 +13,14 @@
 
 #define DISPLAY_UPSIDEDOWN // Uncomment to reverse display screen
 
-// GPIO pinnen defini�ren
+// GPIO pins
 #define RS  32
 #define EN  33
 #define CS1 18
 #define CS2 5
 #define RST 25
 
-// Datapinnen D0-D7 is done via the io-expander
+// Datapins D0-D7 are connected to the io-expander
 
 void sendData(uint8_t data);
 void sendCommand(uint8_t cmd);

@@ -1,5 +1,5 @@
 //
-// Created by pi on 2/14/25.
+// Created by Thijs Hulshof
 //
 
 #include "display/display.h"
@@ -9,8 +9,6 @@
 #include "gpio/gpioPins.h"
 
 #include <string.h>
-
-// Functie om een commando te sturen
 
 void sendCommand(uint8_t cmd) {
     gpioWriteOutput(RS, 0);  // Commando-modus
@@ -24,7 +22,7 @@ void sendCommand(uint8_t cmd) {
     gpioWriteOutput(EN, 0);
 }
 
-// Functie om data te sturen (pixels of tekst)
+
 void sendData(uint8_t data) {
     gpioWriteOutput(RS, 1); // Data-modus
 
@@ -35,7 +33,6 @@ void sendData(uint8_t data) {
     gpioWriteOutput(EN, 0);
 }
 
-// Initialiseer het LCD
 void initDisplay() {
 
     gpioSetOutputPin(RS);
@@ -49,7 +46,6 @@ void initDisplay() {
     sendCommand(0x003F);  // LCD inschakelen
 }
 
-// Scherm wissen
 void clearScreen() {
     gpioWriteOutput(CS1, 1);
     gpioWriteOutput(CS2, 1);
@@ -62,7 +58,6 @@ void clearScreen() {
     }
 }
 
-//functie om cursor op de plek te zetten.
 void setCursor(uint8_t row, uint8_t offset)
 {
     #ifdef DISPLAY_UPSIDEDOWN
@@ -97,8 +92,6 @@ void setCursor(uint8_t row, uint8_t offset)
     gpioWriteOutput(CS2, check2);
 }
 
-
-//Simpele functie om tekst weer te geven
 void drawText(const char* text, uint8_t row, uint8_t offset) {
     uint8_t cnt = offset;
     size_t size;

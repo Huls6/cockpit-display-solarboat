@@ -1,3 +1,6 @@
+//
+// Created by Thijs Hulshof
+//
 
 #include "bitmapDisplay.h"
 
