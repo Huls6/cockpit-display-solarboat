@@ -85,6 +85,7 @@ const uint8_t* getLetterBitmap(const char letter, size_t* size) {
     static const uint8_t colon[] = { 0x00, 0x42, 0x00 };
     static const uint8_t percent[] = { 0x62, 0x64, 0x08, 0x13, 0x23, 0x00 };
     static const uint8_t celsius[] = { 0x06, 0x09, 0x09, 0x06, 0x00 };
+    static const uint8_t dash[] = {0x18,0x18,0x18,0x18,0x18};
     static const uint8_t vertical_bar[] = { 0xFF };
 
     static uint8_t unknown[] = { 0x00, 0x00, 0x00, 0x00 };  // Unknown character
@@ -164,6 +165,7 @@ const uint8_t* getLetterBitmap(const char letter, size_t* size) {
         case '%': *size = sizeof(percent); return percent;
         case '*': *size = sizeof(celsius); return celsius; // Celsius symbol
         case '|': *size = sizeof(vertical_bar); return vertical_bar;
+        case '-': *size = sizeof(dash); return dash;
 
         default: *size = sizeof(unknown); return unknown;
     }

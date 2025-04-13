@@ -3,12 +3,10 @@
 //
 
 #include "display/display.h"
-
 #include <display/PCF8574.h>
-
 #include "gpio/gpioPins.h"
-
 #include <string.h>
+#include <freertos/FreeRTOS.h>
 
 void sendCommand(uint8_t cmd) {
     gpioWriteOutput(RS, 0);  // Commando-modus
@@ -107,6 +105,21 @@ void drawText(const char* text, uint8_t row, uint8_t offset) {
                 sendData(bitmap[y]);
             #endif
         }
+    }
+}
+
+// Function to scroll text when longer than DISPLAY_WIDTH
+void scrollText(const char *text, uint8_t row) {
+    int textLength = strlen(text);
+
+    if (textLength <= MAXCHARACTER) {
+        drawText(text, row, 0);  // If text fits, display it normally
+    }
+
+    // Scroll effect
+    for (int i = 0; i < textLength - MAXCHARACTER; i++) {
+        drawText(text + i, row, 0);  // Shift text position
+        vTaskDelay(pdMS_TO_TICKS(SCROLL_DELAY));  // Delay for smooth scrolling
     }
 }
 
