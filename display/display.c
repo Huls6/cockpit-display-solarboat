@@ -108,6 +108,35 @@ void drawText(const char* text, uint8_t row, uint8_t offset) {
     }
 }
 
+void drawNumberLarge(const char* Lnumber, uint8_t row, uint8_t offset) {
+    uint8_t cnt = offset;
+    size_t size;
+    const uint8_t* bitmap = 0;
+    for (uint32_t i = 0; i < strlen(Lnumber); i++) {
+        bitmap = getLargeNumberTop(Lnumber[i],&size);
+        for (size_t y = 0; y < size; y++) {
+            setCursor(row, cnt);
+            cnt++;
+#ifdef DISPLAY_UPSIDEDOWN
+            sendData(reverseBits(bitmap[y]));
+#else
+            sendData(bitmap[y]);
+#endif
+        }
+    }cnt = offset;
+    for (uint32_t i = 0; i < strlen(Lnumber); i++) {
+        bitmap = getLargeNumberBod(Lnumber[i],&size);
+        for (size_t y = 0; y < size; y++) {
+            setCursor(row+1, cnt);
+            cnt++;
+#ifdef DISPLAY_UPSIDEDOWN
+            sendData(reverseBits(bitmap[y]));
+#else
+            sendData(bitmap[y]);
+#endif
+        }
+    }
+}
 // Function to scroll text when longer than DISPLAY_WIDTH
 void scrollText(const char *text, uint8_t row) {
     int textLength = strlen(text);
@@ -148,9 +177,9 @@ void drawEmoji(const char* text, uint8_t row, uint8_t offset) {
 }
 
 uint8_t reverseBits(uint8_t byte) {
-    byte = (byte & 0xF0) >> 4 | (byte & 0x0F) << 4;
-    byte = (byte & 0xCC) >> 2 | (byte & 0x33) << 2;
-    byte = (byte & 0xAA) >> 1 | (byte & 0x55) << 1;
+     byte = (byte & 0xF0) >> 4 | (byte & 0x0F) << 4;
+     byte = (byte & 0xCC) >> 2 | (byte & 0x33) << 2;
+     byte = (byte & 0xAA) >> 1 | (byte & 0x55) << 1;
     return byte;
 }
 

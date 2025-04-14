@@ -33,6 +33,7 @@ void drawText(const char* text, uint8_t row, uint8_t offset);
 void scrollText(const char *text, uint8_t row);
 void drawNumber(const uint16_t cnt, uint8_t row, uint8_t offset);
 void drawEmoji(const char* text, uint8_t row, uint8_t offset);
+void drawNumberLarge(const char* Lnumber, uint8_t row, uint8_t offset);
 uint8_t reverseBits(uint8_t byte);
 
 

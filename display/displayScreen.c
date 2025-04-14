@@ -21,6 +21,13 @@ void initDashboardScreen(void) {
 
     drawText("----------------------------------------------",6,0);
     drawText("E: No CAN connected",7,0);
+
+    drawNumberLarge("0",0,60);
+    drawText("KM/h",2,70);
+
+    drawNumberLarge("0",3,60);
+    drawText("Watt",5,70);
+
 }
 
 //TODO: HANDY INFO

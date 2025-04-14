@@ -10,6 +10,7 @@
 
 const uint8_t* getLetterBitmap(const char letter, size_t* size);
 const uint8_t* getEmojiBitmap(const char emoji, size_t* size);
-
+const uint8_t* getLargeNumberTop(const char Lnumb, size_t* size);
+const uint8_t* getLargeNumberBod(const char Lnumb, size_t* size);
 
 #endif //BITMAPDISPLAY_H
