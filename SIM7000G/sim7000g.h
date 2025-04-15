@@ -10,5 +10,6 @@ extern char buffer[1024];
 void togglePowerSIM7000G(void);
 void initSIM7000G(void);
 void connectToLTE(void);
+void initGPS(void);
 
 #endif //SIM7000G_H

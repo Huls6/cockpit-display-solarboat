@@ -17,21 +17,27 @@
 
 #include <SIM7000G/sim7000g.h>
 
-char buffer[1024];
+#include "CAN/canData.h"
 
+bool checkCAN = false;
+bool checkGPS = false;
+bool checkLTE = false;
+
+char buffer[1024];
 void app_main(void) {
 
-    //Startup
+#ifdef DEBUGMODE
+    xTaskCreate(uart_bridge_task, "uart_bridge_task", 4096, NULL, 10, NULL);
+#endif
+
+    //Startup display
     i2c_master_init();
     initDisplay();
     clearScreen();
     initDashboardScreen();
 
+    //Startup SIM7000G
     initUart2();
-    #ifdef DEBUGMODE
-        xTaskCreate(uart_bridge_task, "uart_bridge_task", 4096, NULL, 10, NULL);
-    #endif
-
     gpioSetOutputPin(4);
     togglePowerSIM7000G();
 
@@ -41,16 +47,48 @@ void app_main(void) {
     vTaskDelay(pdMS_TO_TICKS(10000));
     sendATCommand("AT+CGREG?",buffer);
     sendATCommand("AT+CREG?",buffer);
+    printf(buffer);
+    if (strcmp(buffer,"+CREG: 0,1")) { //TODO: MAKE THIS WORK BECAUSE strcmp returns 0 when matches
+        checkLTE = true;
+    }
     vTaskDelay(pdMS_TO_TICKS(500));
-    connectToLTE();
+    connectToLTE(); //TODO LOGGING SYSTEM AND SEND TO SERVER
+    //initGPS(); TODO GETTING FASTER A FIX AND PARSE DATA
+
+    //Init CAN-bus
+    initCAN();
+    xTaskCreate(getCANdataTask, "getCANdataTask", 4096, NULL, 10, NULL);
 
     while (1) {
-        sendATCommand("AT+CGNSINF",buffer); //Geef parameters
+        updateDisplay();
+        if(checkGPS) {
+            drawText("GPS",3,100);
+        }
+        else {
+            drawText("    ",3,100);
+            infoLine("E: NO GPS connection");
+        }
+        if(checkLTE) {
+            drawText("LTE",4,100);
+        }
+        else {
+            drawText("    ",4,100);
+            infoLine("E: NO LTE connection");
+        }
+        if(checkCAN) {
+            drawText("CAN",5,100);
+        }
+        else {
+            drawText("    ",5,100);
+            infoLine("E: NO CAN connected");
+        }
+        if(checkCAN&&checkGPS&&checkLTE) {
+            infoLine("I:Operational");
+        }
         vTaskDelay(pdMS_TO_TICKS(1000));
-        drawText(buffer,7,12);
     }
-
     return;
+
 }
 
 //Send SMS to me (Thijs H)

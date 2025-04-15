@@ -36,5 +36,4 @@ void drawEmoji(const char* text, uint8_t row, uint8_t offset);
 void drawNumberLarge(const char* Lnumber, uint8_t row, uint8_t offset);
 uint8_t reverseBits(uint8_t byte);
 
-
 #endif //DISPLAY_H
