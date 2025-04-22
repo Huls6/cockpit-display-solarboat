@@ -5,6 +5,8 @@
 #include "canData.h"
 
 //#include <log.h>
+#include <math.h>
+
 #include "esp_log.h"
 
 #include "driver/twai.h"
@@ -65,9 +67,9 @@ struct displayVariables CANtoDisplayParser(enum CANID ID, uint8_t Length, uint8_
     switch(ID) {
         case BMS1:
             if (Message[3] == 0x1) {
-                temp.Voltage = (double)(((uint16_t)Message[5] << 8) | Message[4]) / 1000;
+                temp.Voltage = ((float)(int16_t)(((uint16_t)Message[5] << 8) | Message[4])) / 1000.0f;
             } else if (Message[3] == 0x2) {
-                temp.Ampere = (double)abs((((int16_t)Message[5] << 8) | (int8_t)Message[4])) / 100;
+                temp.Ampere = ((float)(int16_t)(((uint16_t)Message[5] << 8) | Message[4])) / 100.0f;
             } else if (Message[3] == 0x5) {
                 temp.Lading = Message[4];
             }
@@ -76,7 +78,10 @@ struct displayVariables CANtoDisplayParser(enum CANID ID, uint8_t Length, uint8_
             temp.FoilHoek = Message[1];
         break;
         case MotorController:
-            temp.MotorTemp = Message[4];
+            int16_t TP =((uint16_t)Message[0] << 8) | (uint16_t)Message[1];
+            printf("TP: %d\n", TP);
+            temp.MotorTemp = -178.4+(249*sqrt((float)3416/(4095-TP)-1));
+            printf("Temperature: %f\n", temp.MotorTemp);
         break;
         default:
     }

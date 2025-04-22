@@ -7,7 +7,7 @@
 
 #include "stdio.h"
 
-enum CANID { BMS1 = 0x302, BMS2 = 0x402, Foil = 0x360, MotorController = 0x386}; //TODO MOTORCONTROLLER ID KLOPT NIET
+enum CANID { BMS1 = 0x302, BMS2 = 0x402, Foil = 0x360, MotorController = 0x601}; //TODO MOTORCONTROLLER ID KLOPT NIET
 
 struct canData {
     uint32_t id;

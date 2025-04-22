@@ -53,13 +53,14 @@ void app_main(void) {
     }
     vTaskDelay(pdMS_TO_TICKS(500));
     connectToLTE(); //TODO LOGGING SYSTEM AND SEND TO SERVER
-    //initGPS(); TODO GETTING FASTER A FIX AND PARSE DATA
+    initGPS(); //TODO GETTING FASTER A FIX AND PARSE DATA
 
     //Init CAN-bus
     initCAN();
     xTaskCreate(getCANdataTask, "getCANdataTask", 4096, NULL, 10, NULL);
 
     while (1) {
+        sendATCommand("",buffer);
         updateDisplay();
         if(checkGPS) {
             drawText("GPS",3,100);
@@ -85,10 +86,9 @@ void app_main(void) {
         if(checkCAN&&checkGPS&&checkLTE) {
             infoLine("I:Operational");
         }
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(500));
     }
     return;
-
 }
 
 //Send SMS to me (Thijs H)
