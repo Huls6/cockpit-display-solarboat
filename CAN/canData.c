@@ -1,5 +1,5 @@
 //
-// Created by thijs on 15-4-2025.
+// Created by Thijs Hulshof
 //
 
 #include "canData.h"
@@ -67,21 +67,19 @@ struct displayVariables CANtoDisplayParser(enum CANID ID, uint8_t Length, uint8_
     switch(ID) {
         case BMS1:
             if (Message[3] == 0x1) {
-                temp.Voltage = ((float)(int16_t)(((uint16_t)Message[5] << 8) | Message[4])) / 1000.0f;
+                temp.voltage = ((float)(((uint16_t)Message[5] << 8) | Message[4])) / 1000.0f;
             } else if (Message[3] == 0x2) {
-                temp.Ampere = ((float)(int16_t)(((uint16_t)Message[5] << 8) | Message[4])) / 100.0f;
+                temp.ampere = ((float)(int16_t)(((uint16_t)Message[5] << 8) | Message[4])) / 100.0f;
             } else if (Message[3] == 0x5) {
-                temp.Lading = Message[4];
+                temp.percentage = Message[4];
             }
         break;
         case Foil:
-            temp.FoilHoek = Message[1];
+            temp.foilAngle = Message[1];
         break;
         case MotorController:
             int16_t TP =((uint16_t)Message[0] << 8) | (uint16_t)Message[1];
-            printf("TP: %d\n", TP);
-            temp.MotorTemp = -178.4+(249*sqrt((float)3416/(4095-TP)-1));
-            printf("Temperature: %f\n", temp.MotorTemp);
+            temp.motorTemp = -178.4+(249*sqrt((float)3416/(4095-TP)-1));
         break;
         default:
     }

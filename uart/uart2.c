@@ -25,14 +25,11 @@ void initUart2(void) {
 }
 
 void sendATCommand(const char *cmd, char* response) {
+    uart_flush_input(UART_NUM);
     uart_write_bytes(UART_NUM, cmd, strlen(cmd));
     uart_write_bytes(UART_NUM, "\r\n", 2);  // Stuur CRLF
-    vTaskDelay(pdMS_TO_TICKS(100));  // Wacht 100 ms
+    vTaskDelay(pdMS_TO_TICKS(10));
     readResponse(response);
-
-    #ifdef DEBUGMODE
-        uart_write_bytes(UART_NUM_0, response, strlen(response));
-    #endif
 }
 
 void readResponse(char* response) {
@@ -40,11 +37,23 @@ void readResponse(char* response) {
     uint16_t cnt = 0;
     char tmp[2] = {'\0'};
     while (esp_timer_get_time() < timeout) {
-        int len = uart_read_bytes(UART_NUM, tmp, 1, pdMS_TO_TICKS(100));
+        int len = uart_read_bytes(UART_NUM, tmp, 1, pdMS_TO_TICKS(10));
         if (len > 0) {
             response[cnt] = tmp[0];
             cnt++;
         }
     }
     response[cnt] = '\0';
+    #ifdef DEBUGMODE
+        uart_write_bytes(UART_NUM_0, response, strlen(response));
+    #endif
+
+    char *token = strtok(response, "\r\n");  // First token: before \r\n
+    token = strtok(NULL, "");                  // Second token: after \r\n
+
+    if (token != NULL) {
+        strncpy(response, token, MAX_BUFLEN - 1);
+    } else {
+        response[0] = '\0';
+    }
 }

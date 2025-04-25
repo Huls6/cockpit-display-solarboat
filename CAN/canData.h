@@ -1,5 +1,5 @@
 //
-// Created by thijs on 15-4-2025.
+// Created by Thijs Hulshof
 //
 
 #ifndef CANDATA_H
@@ -7,7 +7,7 @@
 
 #include "stdio.h"
 
-enum CANID { BMS1 = 0x302, BMS2 = 0x402, Foil = 0x360, MotorController = 0x601}; //TODO MOTORCONTROLLER ID KLOPT NIET
+enum CANID { BMS1 = 0x302, BMS2 = 0x402, Foil = 0x360, MotorController = 0x601};
 
 struct canData {
     uint32_t id;
@@ -17,11 +17,11 @@ struct canData {
 };
 
 struct displayVariables {
-    float Voltage;
-    float Ampere;
-    uint8_t Lading;
-    uint8_t FoilHoek;
-    float MotorTemp;
+    float voltage;
+    float ampere;
+    uint8_t percentage;
+    uint8_t foilAngle;
+    float motorTemp;
     float speed;
 };
 

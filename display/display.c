@@ -123,7 +123,8 @@ void drawNumberLarge(const char* Lnumber, uint8_t row, uint8_t offset) {
             sendData(bitmap[y]);
 #endif
         }
-    }cnt = offset;
+    }
+    cnt = offset;
     for (uint32_t i = 0; i < strlen(Lnumber); i++) {
         bitmap = getLargeNumberBod(Lnumber[i],&size);
         for (size_t y = 0; y < size; y++) {
@@ -135,6 +136,11 @@ void drawNumberLarge(const char* Lnumber, uint8_t row, uint8_t offset) {
             sendData(bitmap[y]);
 #endif
         }
+    }
+    int spaceLeft = (90-cnt)/5;
+    for (int y = 0; y < spaceLeft; y++) {
+        drawText(" ",row,cnt+y);
+        drawText(" ",row+1,cnt+y);
     }
 }
 // Function to scroll text when longer than DISPLAY_WIDTH

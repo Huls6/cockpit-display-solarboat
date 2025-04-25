@@ -19,7 +19,7 @@ void initDashboardScreen(void) {
     drawText("Temp:", 0, 1);
     drawText("*C",1,23);
 
-    drawText("Hoek:", 4,1);
+    drawText("Angle:", 4,1);
     drawText("*", 5,23);
 
     drawText("----------------------------------------------",6,0);
@@ -37,30 +37,16 @@ void infoLine(char* input) {
     drawText(input,7,0);
 }
 
-struct canData can;
-struct displayVariables displaydata;
-
-void getCANdataTask(void *arg) {
-    while (1) {
-        can = getCANData();
-        displaydata = CANtoDisplayParser(can.id, can.dlc, can.data);
-        if (can.id == 0) {
-            checkCAN = false;
-        }
-        else if(can.id != 0 && checkCAN==false){
-            checkCAN = true;
-        }
-    }
-}
+struct displayVariables displayData;
 
 void updateDisplay(void) {
     char temp_c[10];
-    sprintf(temp_c,"%0.1f",displaydata.MotorTemp);
+    sprintf(temp_c,"%0.1f",displayData.motorTemp);
     drawText(temp_c,1,1);
-    drawNumber(displaydata.FoilHoek, 5,1);
-    drawNumber(displaydata.Lading,1,102);
+    drawNumber(displayData.foilAngle, 5,1);
+    drawNumber(displayData.percentage,1,102);
     char buf[20];
-    float power = displaydata.Voltage*displaydata.Ampere;
+    float power = (-1)*displayData.voltage*displayData.ampere;
     if (power < 100) {
         sprintf(buf, "%0.2f ", power);
     }
@@ -71,4 +57,32 @@ void updateDisplay(void) {
         sprintf(buf, "%d ", (int)power);
     }
     drawNumberLarge(buf,3,40);
+
+    drawNumberLarge(gpsData.speed,0,40);
+    if (gpsData.fix) {
+        checkGPS = true;
+    }
+    else {
+        checkGPS = false;
+    }
+}
+
+//FREE-RTOS TASKS
+void getCANdataTask(void *arg) {
+    while (1) {
+        can = getCANData();
+        displayData = CANtoDisplayParser(can.id, can.dlc, can.data);
+        if (can.id == 0) {
+            checkCAN = false;
+        }
+        else if(can.id != 0 && checkCAN==false){
+            checkCAN = true;
+        }
+    }
+}
+
+void getGPSdataTask(void *arg) {
+    while (1) {
+        gpsData = get_gnss_data();
+    }
 }
