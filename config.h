@@ -9,4 +9,6 @@
 
 #define DEBUGMODE   //Print info to UART0
 
+//#define SIMPIN  "AT+CPIN=00000" //define as AT+CPIN=<PIN>
+
 #endif //CONFIG_H

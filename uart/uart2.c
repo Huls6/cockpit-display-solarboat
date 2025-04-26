@@ -33,7 +33,7 @@ void sendATCommand(const char *cmd, char* response) {
 }
 
 void readResponse(char* response) {
-    int64_t timeout = esp_timer_get_time() + 1000000;  // 1 sec timeout
+    int64_t timeout = esp_timer_get_time() + 100000;  // 100 milliseconds timeout
     uint16_t cnt = 0;
     char tmp[2] = {'\0'};
     while (esp_timer_get_time() < timeout) {
@@ -42,14 +42,18 @@ void readResponse(char* response) {
             response[cnt] = tmp[0];
             cnt++;
         }
+        else {
+            break;
+        }
     }
     response[cnt] = '\0';
     #ifdef DEBUGMODE
         uart_write_bytes(UART_NUM_0, response, strlen(response));
     #endif
 
-    char *token = strtok(response, "\r\n");  // First token: before \r\n
-    token = strtok(NULL, "");                  // Second token: after \r\n
+    char* rest = response;
+    char *token = strtok_r(rest, "\r\n", &rest);  // First token: before \r\n
+    token = strtok_r(rest, "", &rest);                  // Second token: after \r\n
 
     if (token != NULL) {
         strncpy(response, token, MAX_BUFLEN - 1);

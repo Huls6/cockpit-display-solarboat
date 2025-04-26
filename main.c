@@ -87,24 +87,10 @@ void app_main(void) {
             drawText("    ",5,100);
             infoLine("E: NO CAN connected  ");
         }
-        if(checkCAN&&checkGPS&&checkLTE) {
+        if(checkCAN && checkGPS && checkLTE) {
             infoLine("I: Nothing on the hand");
         }
         vTaskDelay(pdMS_TO_TICKS(250));
     }
     return;
 }
-
-// EXPERIMENTAL
-//  LOGI("Set URL\n");
-//  sendATCommand("AT+SHCONF=BODYLEN,1024");
-//  sendATCommand("AT+SHCONF=HEADERLEN,350");
-//  vTaskDelay(pdMS_TO_TICKS(1000));
-//
-//  LOGI("Start Connection\n");
-//  sendATCommand("AT+SHCONN");
-//  vTaskDelay(pdMS_TO_TICKS(10000));
-//
-//  LOGI("Close Connection\n");
-//  sendATCommand("AT+SHDISC");
-//  vTaskDelay(pdMS_TO_TICKS(1000));

@@ -5,6 +5,8 @@
 #include "displayScreen.h"
 
 #include <CAN/canData.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 #include "display.h"
 
@@ -84,5 +86,7 @@ void getCANdataTask(void *arg) {
 void getGPSdataTask(void *arg) {
     while (1) {
         gpsData = get_gnss_data();
+        vTaskDelay(pdMS_TO_TICKS(250));
     }
+
 }
