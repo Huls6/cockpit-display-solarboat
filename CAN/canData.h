@@ -22,6 +22,7 @@ struct displayVariables {
     uint8_t percentage;
     uint8_t foilAngle;
     float motorTemp;
+    float motorControllerTemp;
     float speed;
 };
 

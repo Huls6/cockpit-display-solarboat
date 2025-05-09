@@ -4,7 +4,10 @@
 
 #include "displayScreen.h"
 
+#include <string.h>
 #include <CAN/canData.h>
+#include <uart/uart2.h>
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -20,6 +23,9 @@ void initDashboardScreen(void) {
 
     drawText("Temp:", 0, 1);
     drawText("*C",1,23);
+
+    drawText("Temp:",2,1);
+    drawText("*C",3,23);
 
     drawText("Angle:", 4,1);
     drawText("*", 5,23);
@@ -43,10 +49,16 @@ struct displayVariables displayData;
 
 void updateDisplay(void) {
     char temp_c[10];
-    sprintf(temp_c,"%0.1f",displayData.motorTemp);
-    drawText(temp_c,1,1);
+    sprintf(temp_c,"%0.1f",displayData.motorControllerTemp);
+    drawText(temp_c,3,1);
+
+    char temp_c2[10];
+    sprintf(temp_c2,"%0.1f",displayData.motorTemp);
+    drawText(temp_c2,1,1);
+
     drawNumber(displayData.foilAngle, 5,1);
     drawNumber(displayData.percentage,1,102);
+
     char buf[20];
     float power = (-1)*displayData.voltage*displayData.ampere;
     if (power < 100) {
@@ -89,4 +101,27 @@ void getGPSdataTask(void *arg) {
         vTaskDelay(pdMS_TO_TICKS(250));
     }
 
+}
+
+void checkLTEconnection(void *arg) {
+    while (1) {
+        sendATCommand("AT+CREG?",buffer);
+
+        char *data_start = strchr(buffer, ':');
+        if (data_start == NULL) {
+
+        }
+        else {
+            data_start++; // skip ':'
+            const char* comma = strchr(data_start, ',');
+            if (comma != NULL && (*(comma + 1) == '1' || *(comma + 1) == '5')) {
+                checkLTE = true;
+            }
+            else {
+                checkLTE = false;
+            }
+            vTaskDelay(pdMS_TO_TICKS(10000));
+        }
+
+    }
 }

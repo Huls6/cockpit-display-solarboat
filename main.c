@@ -48,17 +48,12 @@ void app_main(void) {
     //Startup SIM7000G
     infoLine("I:Startup SIM7000G");
     initUart2();
-    initSIM7000G(); //TODO toggle check if already on
+    initSIM7000G();
 
     //Initialize LTE and GPS
     infoLine("I:Initializing LTE    ");
     connectToLTE(); //TODO LOGGING SYSTEM AND SEND TO SERVER + CHECK FOR LTE CONNECTION AFTER SOME TIME
-
-    sendATCommand("AT+CGREG?",buffer);
-    sendATCommand("AT+CREG?",buffer);
-    if (strcmp(buffer,"+CREG: 0,1")) { //TODO: MAKE THIS WORK BECAUSE strcmp returns 0 when matches
-        checkLTE = true;
-    }
+    xTaskCreate(checkLTEconnection, "checkLTEconnection", 4096, NULL, 15, NULL);
 
     infoLine("I:Initializing GPS    ");
     initGPS();

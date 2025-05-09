@@ -19,5 +19,6 @@ void updateDisplay(void);
 
 void getCANdataTask(void *arg);
 void getGPSdataTask(void *arg);
+void checkLTEconnection(void *arg);
 
 #endif //DISPLAYSCREEN_H

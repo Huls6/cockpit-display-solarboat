@@ -18,6 +18,13 @@ void togglePowerSIM7000G(void) {
 
 void initSIM7000G(void) {
     gpioSetOutputPin(4);
+
+    //Check if already on
+    sendATCommand("AT",buffer);
+    if (strcmp(buffer,"\r\nOK\r\n")==0) {
+        return;
+    }
+
     togglePowerSIM7000G();
     sendATCommand(SIMPIN,buffer);
 }
@@ -39,6 +46,7 @@ void initGPS(void) {
     sendATCommand("AT+CGNSMOD=1,1,2,2",buffer);                     // Set satellite preference
     sendATCommand("AT+CGNSRTMS=250",buffer);                        // Set sample moment to 4 Hz (250 ms)
     sendATCommand("AT+CGNSHOR=1",buffer);                           // Set positioning desired accuracy
+    vTaskDelay(pdMS_TO_TICKS(2000));
 
     //A-GPS and XTRA for faster fix
     sendATCommand("AT+SAPBR=3,1,\"APN\",\"portalmmm.nl\"", buffer); // Set APN for NTP sync to local
@@ -85,6 +93,12 @@ struct GNSSData get_gnss_data() {
 
     while ((token = strtok_r(rest, ",", &rest))) {
         switch (field) {
+            case 0:
+                if(strcmp(token," 0")==0) {
+                    sendATCommand("AT+SGPIO=0,4,1,1",buffer);                       // Set GPIO output
+                    sendATCommand("AT+CGNSPWR=1",buffer);                           // Enable the GNSS (GPS) power.
+                }
+            break;
             case 1:
                 data.fix = atoi(token);
             break;
@@ -95,8 +109,8 @@ struct GNSSData get_gnss_data() {
                 data.longitude = atof(token);
             break;
             case 6:
-                sprintf(data.speed, "%-6s", token);
-            data.speed[sizeof(data.speed) - 1] = '\0';
+                sprintf(data.speed, "%-6.1f", atof(token));
+                data.speed[sizeof(data.speed) - 1] = '\0';
             break;
             default:
             break;

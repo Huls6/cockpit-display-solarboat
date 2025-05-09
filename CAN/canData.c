@@ -78,8 +78,18 @@ struct displayVariables CANtoDisplayParser(enum CANID ID, uint8_t Length, uint8_
             temp.foilAngle = Message[1];
         break;
         case MotorController:
+
+            //Motorcontroller temp
             int16_t TP =((uint16_t)Message[0] << 8) | (uint16_t)Message[1];
-            temp.motorTemp = -178.4+(249*sqrt((float)3416/(4095-TP)-1));
+            temp.motorControllerTemp = -178.4+(249*sqrt((float)3416/(4095-TP)-1));
+
+            //Motor temp
+            int16_t TExt =((uint16_t)Message[2] << 8) | (uint16_t)Message[3];
+            float Beta = 3950.0; // Example value for Beta
+            float R25 = 10000.0; // Example value for R25 (10kΩ)
+            float tempK = Beta / ((float)log((float)(TExt * 4700.0) / ((float)(4095.0 - TP) * R25)) + (float)(Beta / 298.0));
+            temp.motorTemp = tempK - 273.0;
+
         break;
         default:
     }
