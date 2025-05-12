@@ -47,6 +47,8 @@ void infoLine(char* input) {
 
 struct displayVariables displayData;
 
+float power[samples] = {0,0,0,0,0,0,0,0,0,0};
+
 void updateDisplay(void) {
     char temp_c[10];
     sprintf(temp_c,"%0.1f",displayData.motorControllerTemp);
@@ -60,15 +62,17 @@ void updateDisplay(void) {
     drawNumber(displayData.percentage,1,102);
 
     char buf[20];
-    float power = (-1)*displayData.voltage*displayData.ampere;
-    if (power < 100) {
-        sprintf(buf, "%0.2f ", power);
+    power[samples-1] = (-1)*displayData.voltage*displayData.ampere;
+    float avrPower = movingAvr();
+
+    if (avrPower < 100) {
+        sprintf(buf, "%0.2f ", avrPower);
     }
-    else if (power >= 100 && power < 1000) {
-        sprintf(buf, "%0.1f ", power);
+    else if (avrPower >= 100 && avrPower < 1000) {
+        sprintf(buf, "%0.1f ", avrPower);
     }
     else {
-        sprintf(buf, "%d ", (int)power);
+        sprintf(buf, "%d ", (int)avrPower);
     }
     drawNumberLarge(buf,3,40);
 
@@ -124,4 +128,19 @@ void checkLTEconnection(void *arg) {
         }
 
     }
+}
+
+int sInd =0;
+float movingAvr(void) {
+    float Avr = 0;
+    for (int i = 0; i < samples; i++) {
+        Avr += power[i];
+    }
+    Avr = Avr/samples;
+    if (sInd > 0) {
+        sInd--;
+    }else {
+        sInd = samples-1;
+    }
+    return Avr;
 }

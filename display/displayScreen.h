@@ -6,6 +6,7 @@
 #define DISPLAYSCREEN_H
 #include <stdbool.h>
 #include <SIM7000G/sim7000g.h>
+#define samples 10
 
 extern bool checkCAN;
 extern bool checkGPS;
@@ -20,5 +21,5 @@ void updateDisplay(void);
 void getCANdataTask(void *arg);
 void getGPSdataTask(void *arg);
 void checkLTEconnection(void *arg);
-
+float movingAvr(void);
 #endif //DISPLAYSCREEN_H
