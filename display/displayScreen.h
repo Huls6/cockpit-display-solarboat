@@ -1,12 +1,12 @@
 //
-// Created by thijs on 31-3-2025.
+// Created by Thijs Hulshof
 //
 
 #ifndef DISPLAYSCREEN_H
 #define DISPLAYSCREEN_H
 #include <stdbool.h>
 #include <SIM7000G/sim7000g.h>
-#define samples 10
+
 
 extern bool checkCAN;
 extern bool checkGPS;

@@ -7,7 +7,12 @@
 
 #include "stdio.h"
 
+//CAN-bus ID's
 enum CANID { BMS1 = 0x302, BMS2 = 0x402, Foil = 0x360, MotorController = 0x601};
+
+//Values of the NTC of the motor.
+#define Beta    3892.0
+#define R25     2252.0
 
 struct canData {
     uint32_t id;
@@ -23,7 +28,6 @@ struct displayVariables {
     uint8_t foilAngle;
     float motorTemp;
     float motorControllerTemp;
-    float speed;
 };
 
 void initCAN();

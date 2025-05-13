@@ -12,6 +12,7 @@
 #include "freertos/task.h"
 
 #include "display.h"
+#include "config.h"
 
 void initDashboardScreen(void) {
     for (int i =0; i < 8; i++) {
@@ -47,7 +48,8 @@ void infoLine(char* input) {
 
 struct displayVariables displayData;
 
-float power[samples] = {0,0,0,0,0,0,0,0,0,0};
+float power[samples] = {0};
+int sInd =0;
 
 void updateDisplay(void) {
     char temp_c[10];
@@ -62,17 +64,14 @@ void updateDisplay(void) {
     drawNumber(displayData.percentage,1,102);
 
     char buf[20];
-    power[samples-1] = (-1)*displayData.voltage*displayData.ampere;
+    power[sInd] = (-1)*displayData.voltage*displayData.ampere;
     float avrPower = movingAvr();
 
-    if (avrPower < 100) {
-        sprintf(buf, "%0.2f ", avrPower);
-    }
-    else if (avrPower >= 100 && avrPower < 1000) {
-        sprintf(buf, "%0.1f ", avrPower);
+    if (avrPower < 1000) {
+        sprintf(buf, "%4.1f ", avrPower);
     }
     else {
-        sprintf(buf, "%d ", (int)avrPower);
+        sprintf(buf, "%4.0f ", avrPower);
     }
     drawNumberLarge(buf,3,40);
 
@@ -130,7 +129,7 @@ void checkLTEconnection(void *arg) {
     }
 }
 
-int sInd =0;
+
 float movingAvr(void) {
     float Avr = 0;
     for (int i = 0; i < samples; i++) {
