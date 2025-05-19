@@ -14,6 +14,9 @@
 #include "display.h"
 #include "config.h"
 
+float movingAvr(void);
+void checkLteConnection(void);
+
 void initDashboardScreen(void) {
     for (int i =0; i < 8; i++) {
         drawText("|",i,35);
@@ -34,10 +37,10 @@ void initDashboardScreen(void) {
     drawText("----------------------------------------------",6,0);
     drawText("I: Initializing",7,0);
 
-    drawNumberLarge("0",0,40);
+    drawNumberLarge("0.0",0,40);
     drawText("KM/h",2,40);
 
-    drawNumberLarge("0",3,40);
+    drawNumberLarge("0.0",3,40);
     drawText("Watt",5,40);
 
 }
@@ -67,12 +70,12 @@ void updateDisplay(void) {
     power[sInd] = (-1)*displayData.voltage*displayData.ampere;
     float avrPower = movingAvr();
 
-    if (avrPower < 1000) {
-        sprintf(buf, "%4.1f ", avrPower);
+    if (avrPower < 100) {
+        sprintf(buf, "%-4.1f", avrPower);  // One decimal for small values
+    } else {
+        sprintf(buf, "%-4.0f", avrPower);  // No decimal for 100 and above
     }
-    else {
-        sprintf(buf, "%4.0f ", avrPower);
-    }
+
     drawNumberLarge(buf,3,40);
 
     drawNumberLarge(gpsData.speed,0,40);
@@ -98,37 +101,52 @@ void getCANdataTask(void *arg) {
     }
 }
 
-void getGPSdataTask(void *arg) {
+void getSim7000gData(void *arg) {
+    int cnt = 0;
+
+    //Check LTE by initialize
+    checkLteConnection();
+
     while (1) {
+        // Time start function for consistent delay
+        const TickType_t startTime = xTaskGetTickCount();
+
         gpsData = get_gnss_data();
-        vTaskDelay(pdMS_TO_TICKS(250));
-    }
 
-}
-
-void checkLTEconnection(void *arg) {
-    while (1) {
-        sendATCommand("AT+CREG?",buffer);
-
-        char *data_start = strchr(buffer, ':');
-        if (data_start == NULL) {
-
-        }
-        else {
-            data_start++; // skip ':'
-            const char* comma = strchr(data_start, ',');
-            if (comma != NULL && (*(comma + 1) == '1' || *(comma + 1) == '5')) {
-                checkLTE = true;
-            }
-            else {
-                checkLTE = false;
-            }
-            vTaskDelay(pdMS_TO_TICKS(10000));
+        // Every second
+        if (cnt % 4 == 0) {
+            sendDisplayData(
+                atof(gpsData.speed),
+                ((int)(-1) * displayData.voltage * displayData.ampere),
+                displayData.percentage,
+                displayData.motorTemp,
+                displayData.motorControllerTemp,
+                displayData.foilAngle,
+                gpsData.latitude,
+                gpsData.longitude
+            );
         }
 
+        // Every 10 seconds
+        if (cnt % 40 == 0) {
+            checkLteConnection();
+        }
+
+        // Prevent overflow
+        if (++cnt >= 1000) {
+            cnt = 0;
+        }
+
+        // Delay calculation
+        const TickType_t endTime = xTaskGetTickCount();
+        const TickType_t elapsedTime = endTime - startTime;
+        //printf("TIME:%lu\n",elapsedTime);
+
+        if (elapsedTime < pdMS_TO_TICKS(250)) {
+            vTaskDelay(pdMS_TO_TICKS(250) - elapsedTime);
+        }
     }
 }
-
 
 float movingAvr(void) {
     float Avr = 0;
@@ -142,4 +160,18 @@ float movingAvr(void) {
         sInd = samples-1;
     }
     return Avr;
+}
+
+void checkLteConnection(void) {
+    sendATCommand("AT+CREG?", buffer);
+    char *data_start = strchr(buffer, ':');
+    if (data_start != NULL) {
+        data_start++;  // Skip ':'
+        const char* comma = strchr(data_start, ',');
+        if (comma != NULL && (*(comma + 1) == '1' || *(comma + 1) == '5')) {
+            checkLTE = true;
+        } else {
+            checkLTE = false;
+        }
+    }
 }

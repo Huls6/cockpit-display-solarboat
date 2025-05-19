@@ -138,20 +138,6 @@ void drawNumberLarge(const char* Lnumber, uint8_t row, uint8_t offset) {
         }
     }
 }
-// Function to scroll text when longer than DISPLAY_WIDTH
-void scrollText(const char *text, uint8_t row) {
-    int textLength = strlen(text);
-
-    if (textLength <= MAXCHARACTER) {
-        drawText(text, row, 0);  // If text fits, display it normally
-    }
-
-    // Scroll effect
-    for (int i = 0; i < textLength - MAXCHARACTER; i++) {
-        drawText(text + i, row, 0);  // Shift text position
-        vTaskDelay(pdMS_TO_TICKS(SCROLL_DELAY));  // Delay for smooth scrolling
-    }
-}
 
 void drawNumber(const uint16_t cnt, uint8_t row, uint8_t offset) {
     char character[10];

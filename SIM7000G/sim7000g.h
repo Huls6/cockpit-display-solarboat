@@ -16,7 +16,9 @@ struct GNSSData{
 
 void togglePowerSIM7000G(void);
 void initSIM7000G(void);
+
 void connectToLTE(void);
+void sendDisplayData(float speed, int power, int battery, int motortemp, int mcutemp, int elevatorangle, double lattitude, double longitude);
 void initGPS(void);
 struct GNSSData get_gnss_data();
 

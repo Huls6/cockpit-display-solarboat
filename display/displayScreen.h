@@ -19,7 +19,5 @@ void infoLine(char* input);
 void updateDisplay(void);
 
 void getCANdataTask(void *arg);
-void getGPSdataTask(void *arg);
-void checkLTEconnection(void *arg);
-float movingAvr(void);
+void getSim7000gData(void *arg);
 #endif //DISPLAYSCREEN_H

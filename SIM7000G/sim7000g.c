@@ -22,7 +22,7 @@ void initSIM7000G(void) {
     //Check if already on
     sendATCommand("AT",buffer);
     if (strcmp(buffer,"\r\nOK\r\n")==0) {
-        return;
+        togglePowerSIM7000G();
     }
 
     togglePowerSIM7000G();
@@ -40,6 +40,27 @@ void connectToLTE(void) {
     sendATCommand("AT+CSTT=\"portalmmm.nl\",\"\",\"\"",buffer); // Set up the APN, username, and password.
     vTaskDelay(pdMS_TO_TICKS(500));
     sendATCommand("AT+CIICR",buffer); // Bring up the wireless data connection.
+}
+
+void sendDisplayData(float speed, int power, int battery, int motortemp, int mcutemp, int elevatorangle, double lattitude, double longitude) {
+
+    //sendATCommand("AT+SHCONF=\"URL\",\"http://server.domain.org\"",buffer);
+    sendATCommand("AT+SHCONF=\"BODYLEN\",1024",buffer);
+    sendATCommand("AT+SHCONF=\"HEADERLEN\",350",buffer);
+    sendATCommand("AT+SHCONN",buffer);
+    vTaskDelay(pdMS_TO_TICKS(500));
+    sendATCommand("AT+SHCHEAD",buffer);
+    sendATCommand("AT+SHAHEAD=\"Content-Type\",\"application/x- www-form-urlencoded\"",buffer);
+    sendATCommand("AT+SHAHEAD=\"Cache-control\",\"no-cache\"",buffer);
+    sendATCommand("AT+SHAHEAD=\"Connection\",\"keep-alive\"",buffer);
+    sendATCommand("AT+SHAHEAD=\"Accept\",\"*/*\"",buffer);
+
+    char data[150] = {0};
+    sprintf(data,"AT+SHREQ=\"/php/insert_data.php?s=%0.1f&p=%d&b=%d&mt=%d&mct=%d&ea=%d&lat=%lf&lon=%lf\",3",speed,power,battery,motortemp,mcutemp, elevatorangle,lattitude,longitude);
+    sendATCommand(data,buffer);
+    vTaskDelay(pdMS_TO_TICKS(100));
+    sendATCommand("AT+SHDISC",buffer);
+    vTaskDelay(pdMS_TO_TICKS(100));
 }
 
 void initGPS(void) {
@@ -84,19 +105,34 @@ struct GNSSData get_gnss_data() {
         return data;
     }
 
-    data_start++; // skip ':'
-
-    // Tokenize fields
-    char *token;
+    data_start++; // Skip the colon
     int field = 0;
-    char* rest = data_start;
+    char *start = data_start;
+    char *end;
 
-    while ((token = strtok_r(rest, ",", &rest))) {
+    while (start && *start != '\0') {
+        end = strchr(start, ',');
+        char token[32] = {0};
+
+        if (end) {
+            size_t len = end - start;
+            if (len > 0) {
+                strncpy(token, start, len);
+                token[len] = '\0';
+            }
+            start = end + 1;
+        } else {
+            // Last field (no comma)
+            strncpy(token, start, sizeof(token) - 1);
+            start = NULL;
+        }
+
+        // Process the fields
         switch (field) {
             case 0:
-                if(strcmp(token," 0")==0) {
-                    sendATCommand("AT+SGPIO=0,4,1,1",buffer);                       // Set GPIO output
-                    sendATCommand("AT+CGNSPWR=1",buffer);                           // Enable the GNSS (GPS) power.
+                if (strcmp(token, "0") == 0) {
+                    sendATCommand("AT+SGPIO=0,4,1,1", buffer);   // Set GPIO output
+                    sendATCommand("AT+CGNSPWR=1", buffer);       // Enable GNSS power
                 }
             break;
             case 1:
@@ -109,15 +145,12 @@ struct GNSSData get_gnss_data() {
                 data.longitude = atof(token);
             break;
             case 6:
-                sprintf(data.speed, "%-6.1f", atof(token));
-                data.speed[sizeof(data.speed) - 1] = '\0';
-            break;
-            default:
+                snprintf(data.speed, sizeof(data.speed), "%-6.1f", atof(token));
             break;
         }
 
         field++;
-        if (field > 6) break;
+        if (field > 6) break; // Adjust if you need more fields
     }
 
     return data;

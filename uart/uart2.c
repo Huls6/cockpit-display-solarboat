@@ -28,7 +28,7 @@ void sendATCommand(const char *cmd, char* response) {
     uart_flush_input(UART_NUM);
     uart_write_bytes(UART_NUM, cmd, strlen(cmd));
     uart_write_bytes(UART_NUM, "\r\n", 2);  // Stuur CRLF
-    vTaskDelay(pdMS_TO_TICKS(10));
+    vTaskDelay(pdMS_TO_TICKS(25));
     readResponse(response);
 }
 

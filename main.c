@@ -52,12 +52,14 @@ void app_main(void) {
 
     //Initialize LTE and GPS
     infoLine("I:Initializing LTE    ");
-    connectToLTE(); //TODO LOGGING SYSTEM AND SEND TO SERVER + CHECK FOR LTE CONNECTION AFTER SOME TIME
-    xTaskCreate(checkLTEconnection, "checkLTEconnection", 4096, NULL, 15, NULL);
+    connectToLTE(); //TODO LOGGING SYSTEM AND SEND ALL CAN DATA TO SERVER
 
     infoLine("I:Initializing GPS    ");
     initGPS();
-    xTaskCreate(getGPSdataTask, "getGPSdataTask", 4096, NULL, 9, NULL);
+
+    vTaskDelay(pdMS_TO_TICKS(1000));
+
+    xTaskCreate(getSim7000gData, "getSim7000gData", 4096, NULL, 15, NULL);
 
     while (1) {
         updateDisplay();
