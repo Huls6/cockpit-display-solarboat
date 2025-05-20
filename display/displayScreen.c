@@ -70,10 +70,10 @@ void updateDisplay(void) {
     power[sInd] = (-1)*displayData.voltage*displayData.ampere;
     float avrPower = movingAvr();
 
-    if (avrPower < 100) {
-        sprintf(buf, "%-4.1f", avrPower);  // One decimal for small values
+    if (avrPower < 100 && avrPower > -100) {
+        sprintf(buf, "%-4.1f ", avrPower);  // One decimal for small values
     } else {
-        sprintf(buf, "%-4.0f", avrPower);  // No decimal for 100 and above
+        sprintf(buf, "%-4.0f ", avrPower);  // No decimal for 100 and above
     }
 
     drawNumberLarge(buf,3,40);
