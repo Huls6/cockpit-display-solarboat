@@ -25,9 +25,10 @@ To configurate the code see config.h, the following can be changed:
 ```
 
 Code functionality in general:
--Drive the display.
--Read CAN-bus.
--Parse CAN-bus data to useful information to show on the display.
--GPS functionality, for location and speed. Extended by adding option Xtra, similar to A-GPS where a faster fix is realised by calculating the satellites position over LTE.
--LTE functionality, to log data to the cloud and have internet access.
--Log data to an SQL-server. This server runs Grafana with a dashboard for data-analysing.
+- Drive the display.
+- Read CAN-bus.
+- Parse CAN-bus data to useful information to show on the display.
+- GPS functionality, for location and speed. Extended by adding option Xtra, similar to A-GPS where a faster fix is realised by calculating the satellites position over LTE.
+- LTE functionality, to log data to the cloud and have internet access.
+- Log data to an SQL-server. This server runs Grafana with a dashboard for data-analysing.
+
