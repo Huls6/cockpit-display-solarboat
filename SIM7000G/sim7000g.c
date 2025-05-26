@@ -42,7 +42,7 @@ void connectToLTE(void) {
     sendATCommand("AT+CIICR",buffer); // Bring up the wireless data connection.
 }
 
-void sendDisplayData(float speed, int power, int battery, int motortemp, int mcutemp, int elevatorangle, double lattitude, double longitude) {
+void sendDisplayData(float speed, int powerTotal, int powerIn, int powerOut, int battery, int motortemp, int mcutemp, int elevatorangle, double lattitude, double longitude) {
 
     //sendATCommand("AT+SHCONF=\"URL\",\"http://server.domain.org\"",buffer);
     sendATCommand("AT+SHCONF=\"BODYLEN\",1024",buffer);
@@ -56,7 +56,7 @@ void sendDisplayData(float speed, int power, int battery, int motortemp, int mcu
     sendATCommand("AT+SHAHEAD=\"Accept\",\"*/*\"",buffer);
 
     char data[150] = {0};
-    sprintf(data,"AT+SHREQ=\"/php/insert_data.php?s=%0.1f&p=%d&b=%d&mt=%d&mct=%d&ea=%d&lat=%lf&lon=%lf\",3",speed,power,battery,motortemp,mcutemp, elevatorangle,lattitude,longitude);
+    sprintf(data,"AT+SHREQ=\"/php/insert_data.php?s=%0.1f&p=%d&pi=%d&po=%d&b=%d&mt=%d&mct=%d&ea=%d&lat=%lf&lon=%lf\",3",speed,powerTotal,powerIn,powerOut,battery,motortemp,mcutemp, elevatorangle,lattitude,longitude);
     sendATCommand(data,buffer);
     vTaskDelay(pdMS_TO_TICKS(100));
     sendATCommand("AT+SHDISC",buffer);

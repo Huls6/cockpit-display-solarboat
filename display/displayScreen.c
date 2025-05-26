@@ -32,7 +32,6 @@ void initDashboardScreen(void) {
     drawText("*C",3,23);
 
     drawText("Angle:", 4,1);
-    drawText("*", 5,23);
 
     drawText("----------------------------------------------",6,0);
     drawText("I: Initializing",7,0);
@@ -67,7 +66,7 @@ void updateDisplay(void) {
     drawNumber(displayData.percentage,1,102);
 
     char buf[20];
-    power[sInd] = (-1)*displayData.voltage*displayData.ampere;
+    power[sInd] = displayData.voltage*displayData.currentOut;
     float avrPower = movingAvr();
 
     if (avrPower < 100 && avrPower > -100) {
@@ -117,7 +116,9 @@ void getSim7000gData(void *arg) {
         if (cnt % 4 == 0) {
             sendDisplayData(
                 atof(gpsData.speed),
-                ((int)(-1) * displayData.voltage * displayData.ampere),
+                ((int)(-1) * displayData.voltage * displayData.currentTotal),
+                ((int)displayData.voltage * displayData.currentIn),
+                ((int)displayData.voltage * displayData.currentOut),
                 displayData.percentage,
                 displayData.motorTemp,
                 displayData.motorControllerTemp,

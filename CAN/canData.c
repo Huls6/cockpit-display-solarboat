@@ -69,7 +69,11 @@ struct displayVariables CANtoDisplayParser(enum CANID ID, uint8_t Length, uint8_
             if (Message[3] == 0x1) {
                 temp.voltage = ((float)(((uint16_t)Message[5] << 8) | Message[4])) / 1000.0f;
             } else if (Message[3] == 0x2) {
-                temp.ampere = ((float)(int16_t)(((uint16_t)Message[5] << 8) | Message[4])) / 100.0f;
+                temp.currentTotal = ((float)(int16_t)(((uint16_t)Message[5] << 8) | Message[4])) / 100.0f;
+            } else if (Message[3] == 0x3) {
+                temp.currentIn = ((float)(int16_t)(((uint16_t)Message[5] << 8) | Message[4])) / 100.0f;
+            } else if (Message[3] == 0x4) {
+                temp.currentOut = ((float)(int16_t)(((uint16_t)Message[5] << 8) | Message[4])) / 100.0f;
             } else if (Message[3] == 0x5) {
                 temp.percentage = Message[4];
             }

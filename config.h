@@ -9,7 +9,7 @@
 
 #define DEBUGMODE   //Print info to UART0
 
-//#define SIMPIN  "AT+CPIN=00000" //define as AT+CPIN=<PIN>
+//#define SIMPIN  "AT+CPIN=00000"
 
 //Moving average sample moments, for smoothing out the power consumption value
 #define samples 3

@@ -23,8 +23,10 @@ struct canData {
 
 struct displayVariables {
     float voltage;
-    float ampere;
-    uint8_t percentage;
+    float currentTotal;
+    float currentIn;
+    float currentOut;
+    float percentage;
     uint8_t foilAngle;
     float motorTemp;
     float motorControllerTemp;
