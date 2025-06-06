@@ -14,4 +14,7 @@
 //Moving average sample moments, for smoothing out the power consumption value
 #define samples 3
 
+//Re-init the display every:
+#define WAIT_INTERVAL_US (10LL * 60LL * 1000000LL)  // 10 minutes
+
 #endif //CONFIG_H

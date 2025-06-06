@@ -23,7 +23,8 @@ void initDashboardScreen(void) {
         drawText("|",i,98);
     }
     drawEmoji("E",0,108);
-    drawText("%",1,120);
+    drawText("%",1,122);
+    drawText("V",2,122);
 
     drawText("Temp:", 0, 1);
     drawText("*C",1,23);
@@ -63,7 +64,11 @@ void updateDisplay(void) {
     drawText(temp_c2,1,1);
 
     drawNumber(displayData.foilAngle, 5,1);
-    drawNumber(displayData.percentage,1,102);
+    drawNumber(displayData.percentage,1,100);
+
+    char temp_c3[10];
+    sprintf(temp_c3,"%0.2f",displayData.lowCelVoltage);
+    drawText(temp_c3,2,100);
 
     char buf[20];
     power[sInd] = displayData.voltage*displayData.currentOut;
@@ -124,7 +129,9 @@ void getSim7000gData(void *arg) {
                 displayData.motorControllerTemp,
                 displayData.foilAngle,
                 gpsData.latitude,
-                gpsData.longitude
+                gpsData.longitude,
+                displayData.rpm,
+                displayData.lowCelVoltage
             );
         }
 
@@ -173,6 +180,7 @@ void checkLteConnection(void) {
             checkLTE = true;
         } else {
             checkLTE = false;
+            sendATCommand("AT+CFUN=1,1",buffer);
         }
     }
 }

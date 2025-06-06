@@ -6,6 +6,7 @@
 
 //#include <log.h>
 #include <math.h>
+#include <string.h>
 
 #include "esp_log.h"
 
@@ -63,6 +64,14 @@ struct canData getCANData(void) {
 
 struct displayVariables temp={0};
 
+void print_binary(uint32_t n) {
+    for (int i = 31; i >= 0; i--) {
+        printf("%lu", (n >> i) & 1);
+        if (i % 8 == 0) printf(" "); // optional: space every byte
+    }
+    printf("\n");
+}
+
 struct displayVariables CANtoDisplayParser(enum CANID ID, uint8_t Length, uint8_t Message[]) {
     switch(ID) {
         case BMS1:
@@ -78,10 +87,15 @@ struct displayVariables CANtoDisplayParser(enum CANID ID, uint8_t Length, uint8_
                 temp.percentage = Message[4];
             }
         break;
+        case BMS2:
+            if (Message[3] == 0xD) {
+                temp.lowCelVoltage = ((float)(((uint16_t)Message[5] << 8) | Message[4])) / 1000.0f;
+            }
+        break;
         case Foil:
             temp.foilAngle = Message[1];
         break;
-        case MotorController:
+        case MotorController1:
 
             //Motorcontroller temp
             int16_t TP =((uint16_t)Message[0] << 8) | (uint16_t)Message[1];
@@ -92,6 +106,11 @@ struct displayVariables CANtoDisplayParser(enum CANID ID, uint8_t Length, uint8_
             float tempK = Beta / ((float)log((float)(TExt * 4700.0) / ((float)(4095.0 - TP) * R25)) + (float)(Beta / 298.0));
             temp.motorTemp = tempK - 273.0;
 
+        break;
+        case MotorController2:
+            // Reverse the bytes to little-endian for the ESP32
+            uint8_t rpm_bytes[4] = {Message[3], Message[2], Message[1], Message[0]};
+            memcpy(&temp.rpm, rpm_bytes, sizeof(float));
         break;
         default:
     }

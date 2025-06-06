@@ -27,6 +27,7 @@ struct GNSSData gpsData;
 struct canData can;
 
 char buffer[MAX_BUFLEN];
+static int64_t last_trigger_time_us = 0;
 
 void app_main(void) {
 
@@ -39,6 +40,7 @@ void app_main(void) {
     initDisplay();
     clearScreen();
     initDashboardScreen();
+    last_trigger_time_us = esp_timer_get_time();
 
     //Init CAN-bus
     infoLine("I:Initializing CAN");
@@ -86,6 +88,14 @@ void app_main(void) {
         }
         if(checkCAN && checkGPS && checkLTE) {
             infoLine("I: Nothing on the hand");
+        }
+
+        //Check if the display needs a re-init after time
+        int64_t now_us = esp_timer_get_time();
+        if ((now_us - last_trigger_time_us) >= WAIT_INTERVAL_US) {
+            last_trigger_time_us = now_us;
+            clearScreen();
+            initDashboardScreen();
         }
         vTaskDelay(pdMS_TO_TICKS(250));
     }
