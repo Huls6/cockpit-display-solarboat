@@ -15,6 +15,8 @@
 #include "config.h"
 
 float movingAvr(void);
+float movingAvr2(void);
+
 void checkLteConnection(void);
 
 void initDashboardScreen(void) {
@@ -25,6 +27,7 @@ void initDashboardScreen(void) {
     drawEmoji("E",0,108);
     drawText("%",1,122);
     drawText("V",2,122);
+    drawText("W in",4,122);
 
     drawText("Temp:", 0, 1);
     drawText("*C",1,23);
@@ -34,8 +37,8 @@ void initDashboardScreen(void) {
 
     drawText("Angle:", 4,1);
 
-    drawText("----------------------------------------------",6,0);
-    drawText("I: Initializing",7,0);
+    drawText("-------------------",6,0);
+    drawText("I: Init",7,0);
 
     drawNumberLarge("0.0",0,40);
     drawText("KM/h",2,40);
@@ -46,13 +49,16 @@ void initDashboardScreen(void) {
 }
 
 void infoLine(char* input) {
+    drawText("                  ",7,0);
     drawText(input,7,0);
 }
 
 struct displayVariables displayData;
 
 float power[samples] = {0};
+float input[samples] = {0};
 int sInd =0;
+int sInd2 =0;
 
 void updateDisplay(void) {
     char temp_c[10];
@@ -66,9 +72,16 @@ void updateDisplay(void) {
     drawNumber(displayData.foilAngle, 5,1);
     drawNumber(displayData.percentage,1,100);
 
+    char temp_c4[10];
+    sprintf(temp_c4,"%0.2f",displayData.lowCelVoltage);
+    drawText(temp_c4,2,100);
+
     char temp_c3[10];
-    sprintf(temp_c3,"%0.2f",displayData.lowCelVoltage);
-    drawText(temp_c3,2,100);
+
+    input[sInd2] = displayData.voltage*displayData.currentIn;
+    float avrPowerIn = movingAvr2();
+    sprintf(temp_c3,"%-4.0f",avrPowerIn);
+    drawText(temp_c3,3,100);
 
     char buf[20];
     power[sInd] = displayData.voltage*displayData.currentOut;
@@ -170,6 +183,20 @@ float movingAvr(void) {
     return Avr;
 }
 
+float movingAvr2(void) {
+    float Avr = 0;
+    for (int i = 0; i < samples; i++) {
+        Avr += input[i];
+    }
+    Avr = Avr/samples;
+    if (sInd2 > 0) {
+        sInd2--;
+    }else {
+        sInd2 = samples-1;
+    }
+    return Avr;
+}
+
 void checkLteConnection(void) {
     sendATCommand("AT+CREG?", buffer);
     char *data_start = strchr(buffer, ':');
@@ -180,7 +207,7 @@ void checkLteConnection(void) {
             checkLTE = true;
         } else {
             checkLTE = false;
-            sendATCommand("AT+CFUN=1,1",buffer);
+            //sendATCommand("AT+CFUN=1,1",buffer); // ATM this command doesnt work to reset TODO: RESET SIM7000G
         }
     }
 }

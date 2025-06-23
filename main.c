@@ -23,6 +23,12 @@ bool checkCAN = false;
 bool checkGPS = false;
 bool checkLTE = false;
 
+bool prevInit = false;
+bool prevGPS = false;
+bool prevLTE = false;
+bool prevCAN = false;
+bool prevAllOK = false;
+
 struct GNSSData gpsData;
 struct canData can;
 
@@ -43,20 +49,20 @@ void app_main(void) {
     last_trigger_time_us = esp_timer_get_time();
 
     //Init CAN-bus
-    infoLine("I:Initializing CAN");
+    infoLine("I:Init CAN");
     initCAN();
     xTaskCreate(getCANdataTask, "getCANdataTask", 4096, NULL, 10, NULL);
 
     //Startup SIM7000G
-    infoLine("I:Startup SIM7000G");
+    infoLine("I:Start SIM");
     initUart2();
     initSIM7000G();
 
     //Initialize LTE and GPS
-    infoLine("I:Initializing LTE    ");
+    infoLine("I:Init LTE");
     connectToLTE(); //TODO LOGGING SYSTEM AND SEND ALL CAN DATA TO SERVER
 
-    infoLine("I:Initializing GPS    ");
+    infoLine("I:Init GPS");
     initGPS();
 
     vTaskDelay(pdMS_TO_TICKS(1000));
@@ -65,29 +71,58 @@ void app_main(void) {
 
     while (1) {
         updateDisplay();
+
         if(checkGPS) {
-            drawText("GPS",3,100);
-        }
-        else {
-            drawText("    ",3,100);
-            infoLine("E: NO GPS connection  ");
-        }
-        if(checkLTE) {
-            drawText("LTE",4,100);
+            drawText("GPS",4,100);
         }
         else {
             drawText("    ",4,100);
-            infoLine("E: NO LTE connection  ");
         }
-        if(checkCAN) {
-            drawText("CAN",5,100);
+        if(checkLTE) {
+            drawText("LTE",5,100);
         }
         else {
             drawText("    ",5,100);
-            infoLine("E: NO CAN connected  ");
         }
-        if(checkCAN && checkGPS && checkLTE) {
-            infoLine("I: Nothing on the hand");
+        if(checkCAN) {
+            drawText("CAN",6,100);
+        }
+        else {
+            drawText("    ",6,100);
+        }
+
+        if (!prevInit) {
+            prevGPS = !checkGPS;
+            prevLTE = !checkLTE;
+            prevCAN = !checkCAN;
+            prevInit = true;
+        }
+
+        if (checkGPS != prevGPS) {
+            if (!checkGPS) {
+                infoLine("E:NO GPS");
+            }
+            prevGPS = checkGPS;
+        }
+        if (checkLTE != prevLTE) {
+            if (!checkLTE) {
+                infoLine("E:NO LTE");
+            }
+            prevLTE = checkLTE;
+        }
+        if (checkCAN != prevCAN) {
+            if (!checkCAN) {
+                infoLine("E:NO CAN");
+            }
+            prevCAN = checkCAN;
+        }
+
+        bool currentAllOK = checkGPS && checkLTE && checkCAN;
+        if (currentAllOK != prevAllOK) {
+            if (currentAllOK) {
+                infoLine("I:OK");
+            }
+            prevAllOK = currentAllOK;
         }
 
         //Check if the display needs a re-init after time
