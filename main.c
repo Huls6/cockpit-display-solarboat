@@ -19,6 +19,10 @@
 
 #include "CAN/canData.h"
 
+#include "SIM7000G/tinygsm/uart_stream.h"
+#include "SIM7000G/tinygsm/src/TinyGsmClient.h"
+#include "SIM7000G/tinygsm/arduino_compat.h"
+
 bool checkCAN = false;
 bool checkGPS = false;
 bool checkLTE = false;
@@ -48,15 +52,15 @@ void app_main(void) {
     initDashboardScreen();
     last_trigger_time_us = esp_timer_get_time();
 
-    //Init CAN-bus
-    infoLine("I:Init CAN");
-    initCAN();
-    xTaskCreate(getCANdataTask, "getCANdataTask", 4096, NULL, 10, NULL);
-
     //Startup SIM7000G
     infoLine("I:Start SIM");
     initUart2();
     initSIM7000G();
+
+    //Init CAN-bus
+    infoLine("I:Init CAN");
+    initCAN();
+    xTaskCreate(getCANdataTask, "getCANdataTask", 4096, NULL, 10, NULL);
 
     //Initialize LTE and GPS
     infoLine("I:Init LTE");
@@ -131,6 +135,7 @@ void app_main(void) {
             last_trigger_time_us = now_us;
             clearScreen();
             initDashboardScreen();
+            prevInit=false;
         }
         vTaskDelay(pdMS_TO_TICKS(250));
     }

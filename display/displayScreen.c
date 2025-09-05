@@ -27,7 +27,7 @@ void initDashboardScreen(void) {
     drawEmoji("E",0,108);
     drawText("%",1,122);
     drawText("V",2,122);
-    drawText("W in",4,122);
+    drawText("W",3,122);
 
     drawText("Temp:", 0, 1);
     drawText("*C",1,23);
@@ -38,7 +38,6 @@ void initDashboardScreen(void) {
     drawText("Angle:", 4,1);
 
     drawText("-------------------",6,0);
-    drawText("I: Init",7,0);
 
     drawNumberLarge("0.0",0,40);
     drawText("KM/h",2,40);

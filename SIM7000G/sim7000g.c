@@ -34,12 +34,15 @@ void connectToLTE(void) {
     sendATCommand("AT+CFUN=1",buffer); // Set full functionality mode.
     vTaskDelay(pdMS_TO_TICKS(500));
     sendATCommand("AT+COPS=0",buffer); // Automatically select operator/network.
+    vTaskDelay(pdMS_TO_TICKS(2000));
+    sendATCommand("AT+CGDCONT=1,\"IP\",\"internet\"",buffer); // Define a PDP context. Set IP and APN.
     vTaskDelay(pdMS_TO_TICKS(1000));
-    sendATCommand("AT+CGDCONT=1,\"IP\",\"portalmmm.nl\"",buffer); // Define a PDP context. Set IP and APN.
     sendATCommand("AT+CGATT=1",buffer); // Attach the device to the GPRS service.
-    sendATCommand("AT+CSTT=\"portalmmm.nl\",\"\",\"\"",buffer); // Set up the APN, username, and password.
-    vTaskDelay(pdMS_TO_TICKS(500));
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    sendATCommand("AT+CSTT=\"internet\",\"\",\"\"",buffer); // Set up the APN, username, and password.
+    vTaskDelay(pdMS_TO_TICKS(1000));
     sendATCommand("AT+CIICR",buffer); // Bring up the wireless data connection.
+    vTaskDelay(pdMS_TO_TICKS(1000));
 }
 
 void sendDisplayData(float speed, int powerTotal, int powerIn, int powerOut, int battery, int motortemp, int mcutemp, int elevatorangle, double lattitude, double longitude,float rpm, float lowCelVoltage) {
@@ -70,7 +73,7 @@ void initGPS(void) {
     vTaskDelay(pdMS_TO_TICKS(2000));
 
     //A-GPS and XTRA for faster fix
-    sendATCommand("AT+SAPBR=3,1,\"APN\",\"portalmmm.nl\"", buffer); // Set APN for NTP sync to local
+    sendATCommand("AT+SAPBR=3,1,\"APN\",\"internet\"", buffer); // Set APN for NTP sync to local
     sendATCommand("AT+SAPBR=1,1", buffer);                          // Open bearer
     sendATCommand("AT+CNTPCID=1", buffer);                          // Set PDP context ID for NTP
     sendATCommand("AT+CNTP=\"pool.ntp.org\",0,1", buffer);          // Set NTP server and timezone offset
@@ -79,7 +82,7 @@ void initGPS(void) {
 
     sendATCommand("AT+CGNSSUPL=1",buffer);                          //Activate A-GPS
 
-    sendATCommand("AT+CNACT=1,\"portalmmm.nl\"", buffer);           // Activate PDP context for XTRA file download
+    sendATCommand("AT+CNACT=1,\"internet\"", buffer);           // Activate PDP context for XTRA file download
     vTaskDelay(pdMS_TO_TICKS(500));
     sendATCommand("AT+HTTPTOFSRL?", buffer);                        // Query download status
     sendATCommand("AT+HTTPTOFS=\"http://xtrapath3.izatcloud.net/xtra3grc.bin\",\"/customer/xtra3grc.bin\"", buffer); // Download XTRA file

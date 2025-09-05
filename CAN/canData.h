@@ -8,7 +8,19 @@
 #include "stdio.h"
 
 //CAN-bus ID's
-enum CANID { BMS1 = 0x302, BMS2 = 0x402, Foil = 0x360, MotorController1 = 0x601, MotorController2 = 0x481};
+enum CANID {
+    BMS1 = 0x302,
+    BMS2 = 0x402,
+    Foil = 0x360,
+    MotorController1 = 0x601,
+    MotorController2 = 0x481,
+    MPPT1 = 0x281,
+    MPPT2 = 0x282,
+    MPPT3 = 0x283,
+    MPPT4 = 0x284,
+    MPPT5 = 0x286,
+    MPPT6 = 0x287
+};
 
 //Values of the NTC of the motor.
 #define Beta    3892.0
