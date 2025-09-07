@@ -5,6 +5,7 @@
 #include "displayScreen.h"
 
 #include <string.h>
+#include <A7670E/A7670E.h>
 #include <CAN/canData.h>
 #include <uart/uart2.h>
 
@@ -117,8 +118,18 @@ void getCANdataTask(void *arg) {
     }
 }
 
-void getSim7000gData(void *arg) {
+void getSimData(void *arg) {
     int cnt = 0;
+
+#ifdef A7670E
+    connectTo4G();
+    initGNSS();
+#else
+    connectToLTE();
+    initGPS();
+#endif
+
+    vTaskDelay(pdMS_TO_TICKS(1000));
 
     //Check LTE by initialize
     checkLteConnection();
@@ -127,24 +138,30 @@ void getSim7000gData(void *arg) {
         // Time start function for consistent delay
         const TickType_t startTime = xTaskGetTickCount();
 
+#ifdef SIM7000G
         gpsData = get_gnss_data();
+#endif
+#ifdef A7670E
+        gpsData = getGNSSData();
+        LOGW("SPEED: %s",gpsData.speed);
+#endif
 
         // Every second
         if (cnt % 4 == 0) {
-            sendDisplayData(
-                atof(gpsData.speed),
-                ((int)(-1) * displayData.voltage * displayData.currentTotal),
-                ((int)displayData.voltage * displayData.currentIn),
-                ((int)displayData.voltage * displayData.currentOut),
-                displayData.percentage,
-                displayData.motorTemp,
-                displayData.motorControllerTemp,
-                displayData.foilAngle,
-                gpsData.latitude,
-                gpsData.longitude,
-                displayData.rpm,
-                displayData.lowCelVoltage
-            );
+            // sendDisplayData(
+            //     atof(gpsData.speed),
+            //     ((int)(-1) * displayData.voltage * displayData.currentTotal),
+            //     ((int)displayData.voltage * displayData.currentIn),
+            //     ((int)displayData.voltage * displayData.currentOut),
+            //     displayData.percentage,
+            //     displayData.motorTemp,
+            //     displayData.motorControllerTemp,
+            //     displayData.foilAngle,
+            //     gpsData.latitude,
+            //     gpsData.longitude,
+            //     displayData.rpm,
+            //     displayData.lowCelVoltage
+            // );
         }
 
         // Every 10 seconds
@@ -206,7 +223,6 @@ void checkLteConnection(void) {
             checkLTE = true;
         } else {
             checkLTE = false;
-            //sendATCommand("AT+CFUN=1,1",buffer); // ATM this command doesnt work to reset TODO: RESET SIM7000G
         }
     }
 }

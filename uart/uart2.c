@@ -5,6 +5,8 @@
 #include "uart2.h"
 
 #include <log.h>
+#include "esp_log.h"
+
 #include <esp_timer.h>
 #include <string.h>
 
@@ -30,6 +32,11 @@ void sendATCommand(const char *cmd, char* response) {
     uart_write_bytes(UART_NUM, "\r\n", 2);  // Stuur CRLF
     vTaskDelay(pdMS_TO_TICKS(25));
     readResponse(response);
+
+#ifdef DEBUGMODE
+    LOGI("S:%s", cmd);
+    LOGI("R:%s",response);
+#endif
 }
 
 void readResponse(char* response) {
@@ -47,9 +54,6 @@ void readResponse(char* response) {
         }
     }
     response[cnt] = '\0';
-    #ifdef DEBUGMODE
-        uart_write_bytes(UART_NUM_0, response, strlen(response));
-    #endif
 
     char* rest = response;
     char *token = strtok_r(rest, "\r\n", &rest);  // First token: before \r\n

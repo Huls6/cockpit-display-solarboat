@@ -4,15 +4,16 @@
 
 #include "sim7000g.h"
 
+#include <display/displayScreen.h>
 #include <gpio/gpioPins.h>
 #include <uart/uart2.h>
 
 #include "freertos/FreeRTOS.h"
 
 void togglePowerSIM7000G(void) {
-    gpioWriteOutput(4,1);
-    vTaskDelay(pdMS_TO_TICKS(1100));
     gpioWriteOutput(4,0);
+    vTaskDelay(pdMS_TO_TICKS(1100));
+    gpioWriteOutput(4,1);
     vTaskDelay(pdMS_TO_TICKS(5000));
 }
 
@@ -101,7 +102,7 @@ void initGPS(void) {
 struct GNSSData get_gnss_data() {
     sendATCommand("AT+CGNSINF", buffer);
 
-    struct GNSSData data = {0, 0.0, 0.0, "0.00"};
+    struct GNSSData data = {0,0, 0.0, 0.0, "0.00"};
 
     char *data_start = strchr(buffer, ':');
     if (data_start == NULL) {

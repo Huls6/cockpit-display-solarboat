@@ -14,14 +14,19 @@
 #include <display/display.h>
 #include <display/PCF8574.h>
 #include <display/displayScreen.h>
+#include <driver/uart.h>
+#include <uart/uart2.h>
+#define BUF_SIZE 1024
 
+#ifdef SIM7000G
 #include <SIM7000G/sim7000g.h>
+#endif
+
+#ifdef A7670E
+#include <A7670E/A7670E.h>
+#endif
 
 #include "CAN/canData.h"
-
-#include "SIM7000G/tinygsm/uart_stream.h"
-#include "SIM7000G/tinygsm/src/TinyGsmClient.h"
-#include "SIM7000G/tinygsm/arduino_compat.h"
 
 bool checkCAN = false;
 bool checkGPS = false;
@@ -36,7 +41,7 @@ bool prevAllOK = false;
 struct GNSSData gpsData;
 struct canData can;
 
-char buffer[MAX_BUFLEN];
+char buffer[1024];
 static int64_t last_trigger_time_us = 0;
 
 void app_main(void) {
@@ -46,97 +51,94 @@ void app_main(void) {
 #endif
 
     //Startup display
-    i2c_master_init();
-    initDisplay();
-    clearScreen();
-    initDashboardScreen();
+    // i2c_master_init();
+    // initDisplay();
+    // clearScreen();
+    // initDashboardScreen();
     last_trigger_time_us = esp_timer_get_time();
 
     //Startup SIM7000G
-    infoLine("I:Start SIM");
+    //infoLine("I:Start SIM");
     initUart2();
+#ifdef A7670E
+    initA7670E();
+#else
     initSIM7000G();
+#endif
 
     //Init CAN-bus
-    infoLine("I:Init CAN");
+    //infoLine("I:Init CAN");
     initCAN();
     xTaskCreate(getCANdataTask, "getCANdataTask", 4096, NULL, 10, NULL);
 
-    //Initialize LTE and GPS
-    infoLine("I:Init LTE");
-    connectToLTE(); //TODO LOGGING SYSTEM AND SEND ALL CAN DATA TO SERVER
-
-    infoLine("I:Init GPS");
-    initGPS();
-
-    vTaskDelay(pdMS_TO_TICKS(1000));
-
-    xTaskCreate(getSim7000gData, "getSim7000gData", 4096, NULL, 15, NULL);
+    //Initialize LTE and GPS //TODO LOGGING SYSTEM AND SEND ALL CAN DATA TO SERVER
+    //infoLine("I:Init SIM");
+    xTaskCreate(getSimData, "getSimData", 4096, NULL, 15, NULL);
 
     while (1) {
-        updateDisplay();
+        //updateDisplay();
 
-        if(checkGPS) {
-            drawText("GPS",4,100);
-        }
-        else {
-            drawText("    ",4,100);
-        }
-        if(checkLTE) {
-            drawText("LTE",5,100);
-        }
-        else {
-            drawText("    ",5,100);
-        }
-        if(checkCAN) {
-            drawText("CAN",6,100);
-        }
-        else {
-            drawText("    ",6,100);
-        }
-
-        if (!prevInit) {
-            prevGPS = !checkGPS;
-            prevLTE = !checkLTE;
-            prevCAN = !checkCAN;
-            prevInit = true;
-        }
-
-        if (checkGPS != prevGPS) {
-            if (!checkGPS) {
-                infoLine("E:NO GPS");
-            }
-            prevGPS = checkGPS;
-        }
-        if (checkLTE != prevLTE) {
-            if (!checkLTE) {
-                infoLine("E:NO LTE");
-            }
-            prevLTE = checkLTE;
-        }
-        if (checkCAN != prevCAN) {
-            if (!checkCAN) {
-                infoLine("E:NO CAN");
-            }
-            prevCAN = checkCAN;
-        }
-
-        bool currentAllOK = checkGPS && checkLTE && checkCAN;
-        if (currentAllOK != prevAllOK) {
-            if (currentAllOK) {
-                infoLine("I:OK");
-            }
-            prevAllOK = currentAllOK;
-        }
-
-        //Check if the display needs a re-init after time
-        int64_t now_us = esp_timer_get_time();
-        if ((now_us - last_trigger_time_us) >= WAIT_INTERVAL_US) {
-            last_trigger_time_us = now_us;
-            clearScreen();
-            initDashboardScreen();
-            prevInit=false;
-        }
+        // if(checkGPS) {
+        //     drawText("GPS",4,100);
+        // }
+        // else {
+        //     drawText("    ",4,100);
+        // }
+        // if(checkLTE) {
+        //     drawText("LTE",5,100);
+        // }
+        // else {
+        //     drawText("    ",5,100);
+        // }
+        // if(checkCAN) {
+        //     drawText("CAN",6,100);
+        // }
+        // else {
+        //     drawText("    ",6,100);
+        // }
+        //
+        // if (!prevInit) {
+        //     prevGPS = !checkGPS;
+        //     prevLTE = !checkLTE;
+        //     prevCAN = !checkCAN;
+        //     prevInit = true;
+        // }
+        //
+        // if (checkGPS != prevGPS) {
+        //     if (!checkGPS) {
+        //         infoLine("E:NO GPS");
+        //     }
+        //     prevGPS = checkGPS;
+        // }
+        // if (checkLTE != prevLTE) {
+        //     if (!checkLTE) {
+        //         infoLine("E:NO LTE");
+        //     }
+        //     prevLTE = checkLTE;
+        // }
+        // if (checkCAN != prevCAN) {
+        //     if (!checkCAN) {
+        //         infoLine("E:NO CAN");
+        //     }
+        //     prevCAN = checkCAN;
+        // }
+        //
+        // bool currentAllOK = checkGPS && checkLTE && checkCAN;
+        // if (currentAllOK != prevAllOK) {
+        //     if (currentAllOK) {
+        //         infoLine("I:OK");
+        //     }
+        //     prevAllOK = currentAllOK;
+        // }
+        //
+        // //Check if the display needs a re-init after time
+        // int64_t now_us = esp_timer_get_time();
+        // if ((now_us - last_trigger_time_us) >= WAIT_INTERVAL_US) {
+        //     last_trigger_time_us = now_us;
+        //     clearScreen();
+        //     initDashboardScreen();
+        //     prevInit=false;
+        // }
         vTaskDelay(pdMS_TO_TICKS(250));
     }
     return;

@@ -11,7 +11,15 @@
 extern bool checkCAN;
 extern bool checkGPS;
 extern bool checkLTE;
-extern struct GNSSData gpsData;
+
+struct GNSSData{
+    int fix;           // 2 = 2D fix, 3 = 3D fix
+    int satellites;
+    double latitude;
+    double longitude;
+    char speed[16];
+};
+
 extern struct canData can;
 
 void initDashboardScreen(void);
@@ -19,5 +27,5 @@ void infoLine(char* input);
 void updateDisplay(void);
 
 void getCANdataTask(void *arg);
-void getSim7000gData(void *arg);
+void getSimData(void *arg);
 #endif //DISPLAYSCREEN_H

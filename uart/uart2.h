@@ -11,8 +11,16 @@
 #include "config.h"
 
 #define UART_NUM 2  // Gebruik UART2
+
+#ifdef A7670E
+#define TX_PIN 26  // ESP32 TX -> SIM7000 RX
+#define RX_PIN 27  // ESP32 RX -> SIM7000 TX
+#else
 #define TX_PIN 27  // ESP32 TX -> SIM7000 RX
 #define RX_PIN 26  // ESP32 RX -> SIM7000 TX
+#endif
+
+
 #define MAX_BUFLEN 1024
 
 void initUart2(void);

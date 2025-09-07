@@ -7,12 +7,7 @@
 
 extern char buffer[1024];
 
-struct GNSSData{
-    int fix;           // 0 = no fix, 1 = fix
-    double latitude;
-    double longitude;
-    char speed[16];
-};
+extern struct GNSSData gpsData;
 
 void togglePowerSIM7000G(void);
 void initSIM7000G(void);
