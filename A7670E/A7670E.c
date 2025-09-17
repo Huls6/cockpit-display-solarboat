@@ -1,6 +1,7 @@
 
 #include "A7670E.h"
 
+#include <CAN/canData.h>
 #include <display/displayScreen.h>
 #include <gpio/gpioPins.h>
 #include <uart/uart2.h>
@@ -8,37 +9,35 @@
 #include "freertos/FreeRTOS.h"
 
 void togglePowerA7670E(void) {
-    gpioSetOutputPin(4);
-    gpioWriteOutput(4,0);
+    gpioSetOutputPin(POWERKEY);
+    gpioWriteOutput(POWERKEY,0);
     vTaskDelay(pdMS_TO_TICKS(100));
-    gpioWriteOutput(4,1);
+    gpioWriteOutput(POWERKEY,1);
     vTaskDelay(pdMS_TO_TICKS(100));
-    gpioWriteOutput(4,0);
+    gpioWriteOutput(POWERKEY,0);
 
     while (1) {
         sendATCommand("AT",buffer);
         if (strcmp(buffer,"\r\nOK\r\n")==0) {
             break;
         }
-        else {
-            vTaskDelay(pdMS_TO_TICKS(1000));
-        }
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 
 void initA7670E(void) {
-    gpioSetOutputPin(12);
-    gpioWriteOutput(12,1);
+    gpioSetOutputPin(POWERPIN);
+    gpioWriteOutput(POWERPIN,1);
 
-    gpioSetOutputPin(5);
-    gpioWriteOutput(5,0);
+    gpioSetOutputPin(RESETPIN);
+    gpioWriteOutput(RESETPIN,0);
     vTaskDelay(pdMS_TO_TICKS(100));
-    gpioWriteOutput(5,1);
+    gpioWriteOutput(RESETPIN,1);
     vTaskDelay(pdMS_TO_TICKS(2600));
-    gpioWriteOutput(5,0);
+    gpioWriteOutput(RESETPIN,0);
 
-    gpioSetOutputPin(25);
-    gpioWriteOutput(25,0);
+    gpioSetOutputPin(25); // DTR PIN
+    gpioWriteOutput(25,1);
 
     togglePowerA7670E();
 
@@ -53,6 +52,96 @@ void connectTo4G(void) {
     sendATCommand("AT+CGPADDR=1",buffer);
     sendATCommand(SIMPIN,buffer);
     vTaskDelay(pdMS_TO_TICKS(2000));
+}
+
+void mqttConnect(void) {
+    sendATCommand("AT+CMQTTSTART",buffer);
+    vTaskDelay(pdMS_TO_TICKS(100));
+    sendATCommand("AT+CMQTTACCQ=0,\"boat\"",buffer);
+    vTaskDelay(pdMS_TO_TICKS(100));
+    sendATCommand("AT+CMQTTWILLTOPIC=0,9",buffer);
+    vTaskDelay(pdMS_TO_TICKS(100));
+    sendATCommand("boat/data", buffer);
+    vTaskDelay(pdMS_TO_TICKS(100));
+    vTaskDelay(pdMS_TO_TICKS(100));
+    //sendATCommand("AT+CMQTTCONNECT=0,\"tcp://server.com:port\",60,1,\"user\",\"passwd\"",buffer);
+    vTaskDelay(pdMS_TO_TICKS(500));
+}
+
+// Helper to publish to a topic with given payload
+void mqttPublishTopic(const char *topic, const char *payload) {
+    char cmd[64];
+    int len;
+
+    // Topic
+    len = strlen(topic);
+    snprintf(cmd, sizeof(cmd), "AT+CMQTTTOPIC=0,%d", len);
+    sendATCommand(cmd, buffer);
+    vTaskDelay(pdMS_TO_TICKS(50));
+    sendATCommand(topic, buffer);
+    vTaskDelay(pdMS_TO_TICKS(50));
+
+    // Payload
+    len = strlen(payload);
+    snprintf(cmd, sizeof(cmd), "AT+CMQTTPAYLOAD=0,%d", len);
+    sendATCommand(cmd, buffer);
+    vTaskDelay(pdMS_TO_TICKS(50));
+    sendATCommand(payload, buffer);
+    vTaskDelay(pdMS_TO_TICKS(100));
+
+    // Publish
+    snprintf(cmd, sizeof(cmd), "AT+CMQTTPUB=0,1,%d", len);
+    sendATCommand(cmd, buffer);
+    vTaskDelay(pdMS_TO_TICKS(100));
+    if (strcmp(buffer, "\r\nOK\r\n") != 0) {
+        mqttDisconnect();
+        vTaskDelay(pdMS_TO_TICKS(100));
+        mqttConnect();
+    }
+}
+
+void sendMqttData(void) {
+    char payload[512];
+    snprintf(payload, sizeof(payload),
+        "{"
+          "\"s\":%.1f,"
+          "\"pt\":%d,"
+          "\"pi\":%d,"
+          "\"po\":%d,"
+          "\"b\":%d,"
+          "\"lbv\":%.2f,"
+          "\"mt\":%.1f,"
+          "\"mct\":%.1f,"
+          "\"fa\":%d,"
+          "\"lat\":%.6f,"
+          "\"lon\":%.6f,"
+          "\"rpm\":%d"
+        "}",
+        atof(gpsData.speed),
+        (int)((-1) * displayData.voltage * displayData.currentTotal),
+        (int)(displayData.voltage * displayData.currentIn),
+        (int)(displayData.voltage * displayData.currentOut),
+        (int)displayData.percentage,
+        displayData.lowCelVoltage,
+        displayData.motorTemp,
+        displayData.motorControllerTemp,
+        displayData.foilAngle,
+        gpsData.latitude,
+        gpsData.longitude,
+        displayData.rpm
+    );
+    mqttPublishTopic("boat/data",payload);
+    vTaskDelay(pdMS_TO_TICKS(100));
+}
+
+void mqttDisconnect(void) {
+    vTaskDelay(pdMS_TO_TICKS(500));
+    sendATCommand("AT+CMQTTDISC=0,120",buffer);
+    vTaskDelay(pdMS_TO_TICKS(100));
+    sendATCommand("AT+CMQTTREL=0",buffer);
+    vTaskDelay(pdMS_TO_TICKS(100));
+    sendATCommand("AT+CMQTTSTOP",buffer);
+    vTaskDelay(pdMS_TO_TICKS(500));
 }
 
 void initGNSS(void) {
@@ -110,7 +199,7 @@ struct GNSSData getGNSSData() {
             break;
             case 12:
                 if(data.fix == 2 || data.fix == 3) {
-                    snprintf(data.speed, sizeof(data.speed), "%-6.1f", atof(token));
+                    snprintf(data.speed, sizeof(data.speed), "%-6.1f", atof(token)*1.852);
                 } else {
                     snprintf(data.speed, sizeof(data.speed), "0.0");
                 }

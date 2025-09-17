@@ -19,8 +19,8 @@
 #define RS  32
 #define EN  33
 #define CS1 18
-#define CS2 5
-#define RST 25
+#define CS2 0   //5 is reset pin of a7670
+#define RST 25  //25 is dtr pin of a7670
 
 // Datapins D0-D7 are connected to the io-expander
 

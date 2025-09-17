@@ -53,8 +53,6 @@ void infoLine(char* input) {
     drawText(input,7,0);
 }
 
-struct displayVariables displayData;
-
 float power[samples] = {0};
 float input[samples] = {0};
 int sInd =0;
@@ -115,6 +113,7 @@ void getCANdataTask(void *arg) {
         else if(can.id != 0 && checkCAN==false){
             checkCAN = true;
         }
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 
@@ -124,6 +123,7 @@ void getSimData(void *arg) {
 #ifdef A7670E
     connectTo4G();
     initGNSS();
+    mqttConnect();
 #else
     connectToLTE();
     initGPS();
@@ -138,30 +138,37 @@ void getSimData(void *arg) {
         // Time start function for consistent delay
         const TickType_t startTime = xTaskGetTickCount();
 
+        // Every half second
+        if (cnt % 2 == 0) {
 #ifdef SIM7000G
-        gpsData = get_gnss_data();
+            gpsData = get_gnss_data();
 #endif
 #ifdef A7670E
-        gpsData = getGNSSData();
-        LOGW("SPEED: %s",gpsData.speed);
+            gpsData = getGNSSData();
 #endif
+        }
 
         // Every second
         if (cnt % 4 == 0) {
-            // sendDisplayData(
-            //     atof(gpsData.speed),
-            //     ((int)(-1) * displayData.voltage * displayData.currentTotal),
-            //     ((int)displayData.voltage * displayData.currentIn),
-            //     ((int)displayData.voltage * displayData.currentOut),
-            //     displayData.percentage,
-            //     displayData.motorTemp,
-            //     displayData.motorControllerTemp,
-            //     displayData.foilAngle,
-            //     gpsData.latitude,
-            //     gpsData.longitude,
-            //     displayData.rpm,
-            //     displayData.lowCelVoltage
-            // );
+#ifdef SIM7000G
+            sendDisplayData(
+                atof(gpsData.speed),
+                ((int)(-1) * displayData.voltage * displayData.currentTotal),
+                ((int)displayData.voltage * displayData.currentIn),
+                ((int)displayData.voltage * displayData.currentOut),
+                displayData.percentage,
+                displayData.motorTemp,
+                displayData.motorControllerTemp,
+                displayData.foilAngle,
+                gpsData.latitude,
+                gpsData.longitude,
+                displayData.rpm,
+                displayData.lowCelVoltage
+            );
+#endif
+#ifdef A7670E
+        sendMqttData();
+#endif
         }
 
         // Every 10 seconds

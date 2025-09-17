@@ -20,7 +20,6 @@ void sendCommand(uint8_t cmd) {
     gpioWriteOutput(EN, 0);
 }
 
-
 void sendData(uint8_t data) {
     gpioWriteOutput(RS, 1); // Data-modus
 

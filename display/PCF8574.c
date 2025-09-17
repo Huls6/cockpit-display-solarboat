@@ -10,6 +10,7 @@
 
 i2c_master_dev_handle_t dev_handle = NULL;
 
+
 void i2c_master_init(void) {
     // 1. Configure and install the I2C master bus
     i2c_master_bus_handle_t bus_handle = NULL;

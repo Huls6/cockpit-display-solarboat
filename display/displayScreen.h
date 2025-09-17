@@ -21,6 +21,7 @@ struct GNSSData{
 };
 
 extern struct canData can;
+extern struct displayVariables displayData;
 
 void initDashboardScreen(void);
 void infoLine(char* input);

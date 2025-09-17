@@ -23,7 +23,7 @@ void initUart2(void) {
     };
     uart_param_config(UART_NUM, &uart_config);
     uart_set_pin(UART_NUM, TX_PIN, RX_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-    uart_driver_install(UART_NUM, 1024 * 2, 0, 0, NULL, 0);
+    uart_driver_install(UART_NUM, 1024, 512, 0, NULL, 0);
 }
 
 void sendATCommand(const char *cmd, char* response) {
