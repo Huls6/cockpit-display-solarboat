@@ -115,7 +115,7 @@ void sendMqttData(void) {
           "\"fa\":%d,"
           "\"lat\":%.6f,"
           "\"lon\":%.6f,"
-          "\"rpm\":%d"
+          "\"rpm\":%.2f"
         "}",
         atof(gpsData.speed),
         (int)((-1) * displayData.voltage * displayData.currentTotal),

@@ -7,13 +7,14 @@
 
 #define DISPLAY_UPSIDEDOWN // Uncomment to reverse display screen
 
-#define DEBUGMODE   //Print info to UART0
+//#define DEBUGMODE   //Print info to UART0
 
 //#define SIM7000G
 
 #define A7670E
 
 //#define SIMPIN  "AT+CPIN=00000"
+#define SIMPIN  "AT+CPIN=70052" //define as AT+CPIN=<PIN>
 
 //Moving average sample moments, for smoothing out the power consumption value
 #define samples 3

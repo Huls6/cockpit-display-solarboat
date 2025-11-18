@@ -42,7 +42,7 @@ struct displayVariables {
     uint8_t foilAngle;
     float motorTemp;
     float motorControllerTemp;
-    int rpm;
+    float rpm;
     float lowCelVoltage;
 };
 
