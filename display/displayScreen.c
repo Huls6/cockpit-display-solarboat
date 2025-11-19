@@ -17,6 +17,7 @@
 
 float movingAvr(void);
 float movingAvr2(void);
+float movingAvr3(void);
 
 void checkLteConnection(void);
 
@@ -55,8 +56,11 @@ void infoLine(char* input) {
 
 float power[samples] = {0};
 float input[samples] = {0};
+float avgSpeed[samples] = {0};
+
 int sInd =0;
 int sInd2 =0;
+int sInd3 =0;
 
 void updateDisplay(void) {
     char temp_c[10];
@@ -75,25 +79,27 @@ void updateDisplay(void) {
     drawText(temp_c4,2,100);
 
     char temp_c3[10];
-
     input[sInd2] = displayData.voltage*displayData.currentIn;
     float avrPowerIn = movingAvr2();
     sprintf(temp_c3,"%-4.0f",avrPowerIn);
     drawText(temp_c3,3,100);
 
-    char buf[20];
+    char temp_c5[20];
     power[sInd] = displayData.voltage*displayData.currentOut;
     float avrPower = movingAvr();
 
     if (avrPower < 100 && avrPower > -100) {
-        sprintf(buf, "%-4.1f ", avrPower);  // One decimal for small values
+        sprintf(temp_c5, "%-4.1f ", avrPower);  // One decimal for small values
     } else {
-        sprintf(buf, "%-4.0f ", avrPower);  // No decimal for 100 and above
+        sprintf(temp_c5, "%-4.0f ", avrPower);  // No decimal for 100 and above
     }
+    drawNumberLarge(temp_c5,3,40);
 
-    drawNumberLarge(buf,3,40);
-
-    drawNumberLarge(gpsData.speed,0,40);
+    char temp_c6[20];
+    avgSpeed[sInd3] = gpsData.speed;
+    float avrSpeed = movingAvr3();
+    snprintf(temp_c6, sizeof(temp_c6), "%.1f ", avrSpeed);
+    drawNumberLarge(temp_c6,0,40);
     if (gpsData.fix) {
         checkGPS = true;
     }
@@ -102,10 +108,22 @@ void updateDisplay(void) {
     }
 }
 
+uint32_t idCounter[100] = {0};
+
 //FREE-RTOS TASKS
 void getCANdataTask(void *arg) {
     while (1) {
         can = getCANData();
+#ifdef DEBUGMODE
+        for (int i = 0; i < 100; i++) {
+            if (idCounter[i] == can.id) break;
+            if (idCounter[i] == 0) {
+                idCounter[i] = can.id;
+                LOGI("New ID:%lx", idCounter[i]);
+                break;
+            }
+        }
+#endif
         displayData = CANtoDisplayParser(can.id, can.dlc, can.data);
         if (can.id == 0) {
             checkCAN = false;
@@ -216,6 +234,20 @@ float movingAvr2(void) {
         sInd2--;
     }else {
         sInd2 = samples-1;
+    }
+    return Avr;
+}
+
+float movingAvr3(void) {
+    float Avr = 0;
+    for (int i = 0; i < samples; i++) {
+        Avr += avgSpeed[i];
+    }
+    Avr = Avr/samples;
+    if (sInd3 > 0) {
+        sInd3--;
+    }else {
+        sInd3 = samples-1;
     }
     return Avr;
 }

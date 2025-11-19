@@ -102,7 +102,7 @@ void initGPS(void) {
 struct GNSSData get_gnss_data() {
     sendATCommand("AT+CGNSINF", buffer);
 
-    struct GNSSData data = {0,0, 0.0, 0.0, "0.00"};
+    struct GNSSData data = {0,0, 0.0, 0.0, 0};
 
     char *data_start = strchr(buffer, ':');
     if (data_start == NULL) {
@@ -150,9 +150,9 @@ struct GNSSData get_gnss_data() {
             break;
             case 6:
                 if(data.fix == 1) {
-                    snprintf(data.speed, sizeof(data.speed), "%-6.1f", atof(token));
+                    data.speed = atof(token);
                 } else {
-                    snprintf(data.speed, sizeof(data.speed), "0.0");
+                    data.speed = 0;
                 }
             break;
         }

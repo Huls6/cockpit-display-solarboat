@@ -117,7 +117,7 @@ void sendMqttData(void) {
           "\"lon\":%.6f,"
           "\"rpm\":%.2f"
         "}",
-        atof(gpsData.speed),
+        gpsData.speed,
         (int)((-1) * displayData.voltage * displayData.currentTotal),
         (int)(displayData.voltage * displayData.currentIn),
         (int)(displayData.voltage * displayData.currentOut),
@@ -154,7 +154,7 @@ void initGNSS(void) {
 struct GNSSData getGNSSData() {
     sendATCommand("AT+CGNSSINFO", buffer);
 
-    struct GNSSData data = {0, 0,0.0, 0.0, "0.00"};
+    struct GNSSData data = {0, 0,0.0, 0.0, 0};
 
     char *data_start = strchr(buffer, ':');
     if (data_start == NULL) {
@@ -199,9 +199,9 @@ struct GNSSData getGNSSData() {
             break;
             case 12:
                 if(data.fix == 2 || data.fix == 3) {
-                    snprintf(data.speed, sizeof(data.speed), "%-6.1f", atof(token)*1.852);
+                    data.speed = atof(token)*1.852;
                 } else {
-                    snprintf(data.speed, sizeof(data.speed), "0.0");
+                    data.speed = 0;
                 }
             break;
         }

@@ -17,7 +17,7 @@ struct GNSSData{
     int satellites;
     double latitude;
     double longitude;
-    char speed[16];
+    float speed;
 };
 
 extern struct canData can;
