@@ -16,6 +16,12 @@
 //#define SIMPIN  "AT+CPIN=00000"
 #define SIMPIN  "AT+CPIN=70052" //define as AT+CPIN=<PIN>
 
+#ifdef SIM7000G
+    #define LTE_URL "AT+SHCONF=\"URL\",\"http://server.domain.org\""
+#else
+    // #define LTE_URL "AT+CMQTTCONNECT=0,\"tcp://server.domain.org:portnumber\",60,1,\"user\",\"password\""
+#endif
+
 //Moving average sample moments, for smoothing out the power consumption value
 #define samples 3
 

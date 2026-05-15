@@ -65,6 +65,7 @@ void mqttConnect(void) {
     vTaskDelay(pdMS_TO_TICKS(100));
     vTaskDelay(pdMS_TO_TICKS(100));
     //sendATCommand("AT+CMQTTCONNECT=0,\"tcp://server.com:port\",60,1,\"user\",\"passwd\"",buffer);
+    sendATCommand(LTE_URL,buffer);
     vTaskDelay(pdMS_TO_TICKS(500));
 }
 

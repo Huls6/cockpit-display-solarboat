@@ -48,7 +48,7 @@ void connectToLTE(void) {
 
 void sendDisplayData(float speed, int powerTotal, int powerIn, int powerOut, int battery, int motortemp, int mcutemp, int elevatorangle, double lattitude, double longitude,int rpm, float lowCelVoltage) {
 
-    //sendATCommand("AT+SHCONF=\"URL\",\"http://server.domain.org\"",buffer);
+    sendATCommand(LTE_URL,buffer);
     sendATCommand("AT+SHCONF=\"BODYLEN\",1024",buffer);
     sendATCommand("AT+SHCONF=\"HEADERLEN\",350",buffer);
     sendATCommand("AT+SHCONN",buffer);

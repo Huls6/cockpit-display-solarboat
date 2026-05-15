@@ -15,9 +15,7 @@
 #include "display.h"
 #include "config.h"
 
-float movingAvr(void);
-float movingAvr2(void);
-float movingAvr3(void);
+float movingAvg(float values[], int *index, float newValue);
 
 void checkLteConnection(void);
 
@@ -39,8 +37,6 @@ void initDashboardScreen(void) {
 
     drawText("Angle:", 4,1);
 
-    drawText("-------------------",6,0);
-
     drawNumberLarge("0.0",0,40);
     drawText("KM/h",2,40);
 
@@ -49,18 +45,19 @@ void initDashboardScreen(void) {
 
 }
 
-void infoLine(char* input) {
-    drawText("                  ",7,0);
-    drawText(input,7,0);
-}
-
-float power[samples] = {0};
-float input[samples] = {0};
+float avgPowerO[samples] = {0};
+float avgPowerI[samples] = {0};
 float avgSpeed[samples] = {0};
 
 int sInd =0;
 int sInd2 =0;
 int sInd3 =0;
+
+int prevGPS;
+bool prevCAN;
+bool prevLTE;
+bool checkCAN;
+bool checkLTE;
 
 void updateDisplay(void) {
     char temp_c[10];
@@ -79,14 +76,13 @@ void updateDisplay(void) {
     drawText(temp_c4,2,100);
 
     char temp_c3[10];
-    input[sInd2] = displayData.voltage*displayData.currentIn;
-    float avrPowerIn = movingAvr2();
+    avgPowerI[sInd2] = displayData.voltage*displayData.currentIn;
+    float avrPowerIn = movingAvg(avgPowerI,&sInd2,displayData.voltage*displayData.currentIn);
     sprintf(temp_c3,"%-4.0f",avrPowerIn);
     drawText(temp_c3,3,100);
 
     char temp_c5[20];
-    power[sInd] = displayData.voltage*displayData.currentOut;
-    float avrPower = movingAvr();
+    float avrPower = movingAvg(avgPowerO,&sInd,displayData.voltage*displayData.currentOut);
 
     if (avrPower < 100 && avrPower > -100) {
         sprintf(temp_c5, "%-4.1f ", avrPower);  // One decimal for small values
@@ -96,15 +92,39 @@ void updateDisplay(void) {
     drawNumberLarge(temp_c5,3,40);
 
     char temp_c6[20];
-    avgSpeed[sInd3] = gpsData.speed;
-    float avrSpeed = movingAvr3();
+    float avrSpeed = movingAvg(avgSpeed,&sInd3,gpsData.speed);
     snprintf(temp_c6, sizeof(temp_c6), "%.1f ", avrSpeed);
     drawNumberLarge(temp_c6,0,40);
-    if (gpsData.fix) {
-        checkGPS = true;
+
+    //Update flags
+    if (gpsData.fix != prevGPS) {
+        prevGPS = gpsData.fix;
+        if(gpsData.fix == 2 || gpsData.fix == 3) {
+            drawText("GPS",4,100);
+        }
+        else {
+            drawText("    ",4,100);
+        }
     }
-    else {
-        checkGPS = false;
+
+    if (checkCAN != prevCAN) {
+        prevCAN = checkCAN;
+        if(checkCAN) {
+            drawText("CAN",6,100);
+        }
+        else {
+            drawText("    ",6,100);
+        }
+    }
+
+    if (checkLTE != prevLTE) {
+        prevLTE = checkLTE;
+        if(checkLTE) {
+            drawText("LTE",5,100);
+        }
+        else {
+            drawText("    ",5,100);
+        }
     }
 }
 
@@ -131,7 +151,6 @@ void getCANdataTask(void *arg) {
         else if(can.id != 0 && checkCAN==false){
             checkCAN = true;
         }
-        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 
@@ -202,7 +221,6 @@ void getSimData(void *arg) {
         // Delay calculation
         const TickType_t endTime = xTaskGetTickCount();
         const TickType_t elapsedTime = endTime - startTime;
-        //printf("TIME:%lu\n",elapsedTime);
 
         if (elapsedTime < pdMS_TO_TICKS(250)) {
             vTaskDelay(pdMS_TO_TICKS(250) - elapsedTime);
@@ -210,46 +228,26 @@ void getSimData(void *arg) {
     }
 }
 
-float movingAvr(void) {
-    float Avr = 0;
-    for (int i = 0; i < samples; i++) {
-        Avr += power[i];
-    }
-    Avr = Avr/samples;
-    if (sInd > 0) {
-        sInd--;
-    }else {
-        sInd = samples-1;
-    }
-    return Avr;
-}
+float movingAvg(float values[], int *index, float newValue)
+{
+    values[*index] = newValue;
 
-float movingAvr2(void) {
-    float Avr = 0;
-    for (int i = 0; i < samples; i++) {
-        Avr += input[i];
-    }
-    Avr = Avr/samples;
-    if (sInd2 > 0) {
-        sInd2--;
-    }else {
-        sInd2 = samples-1;
-    }
-    return Avr;
-}
+    float avg = 0.0f;
 
-float movingAvr3(void) {
-    float Avr = 0;
     for (int i = 0; i < samples; i++) {
-        Avr += avgSpeed[i];
+        avg += values[i];
     }
-    Avr = Avr/samples;
-    if (sInd3 > 0) {
-        sInd3--;
-    }else {
-        sInd3 = samples-1;
+
+    avg /= samples;
+
+    // Circular decrement
+    if (*index > 0) {
+        (*index)--;
+    } else {
+        *index = samples - 1;
     }
-    return Avr;
+
+    return avg;
 }
 
 void checkLteConnection(void) {
