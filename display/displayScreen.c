@@ -15,8 +15,21 @@
 #include "display.h"
 #include "config.h"
 
-float movingAvg(float values[], int *index, float newValue);
+float avgPowerO[samples] = {0};
+float avgPowerI[samples] = {0};
+float avgSpeed[samples] = {0};
 
+int sInd =0;
+int sInd2 =0;
+int sInd3 =0;
+
+int prevGPS;
+bool prevCAN;
+bool prevLTE;
+bool checkCAN;
+bool checkLTE;
+
+float movingAvg(float values[], int *index, float newValue);
 void checkLteConnection(void);
 
 void initDashboardScreen(void) {
@@ -27,7 +40,8 @@ void initDashboardScreen(void) {
     drawEmoji("E",0,108);
     drawText("%",1,122);
     drawText("V",2,122);
-    drawText("W",3,122);
+    drawText("V",3,122);
+    drawText("W",4,122);
 
     drawText("Temp:", 0, 1);
     drawText("*C",1,23);
@@ -43,26 +57,15 @@ void initDashboardScreen(void) {
     drawNumberLarge("0.0",3,40);
     drawText("Watt",5,40);
 
+    prevGPS = 0;
+    prevCAN = false;
+    prevLTE = false;
 }
 
-float avgPowerO[samples] = {0};
-float avgPowerI[samples] = {0};
-float avgSpeed[samples] = {0};
-
-int sInd =0;
-int sInd2 =0;
-int sInd3 =0;
-
-int prevGPS;
-bool prevCAN;
-bool prevLTE;
-bool checkCAN;
-bool checkLTE;
-
 void updateDisplay(void) {
-    char temp_c[10];
-    sprintf(temp_c,"%0.1f",displayData.motorControllerTemp);
-    drawText(temp_c,3,1);
+    char temp_c1[10];
+    sprintf(temp_c1,"%0.1f",displayData.motorControllerTemp);
+    drawText(temp_c1,3,1);
 
     char temp_c2[10];
     sprintf(temp_c2,"%0.1f",displayData.motorTemp);
@@ -71,59 +74,63 @@ void updateDisplay(void) {
     drawNumber(displayData.foilAngle, 5,1);
     drawNumber(displayData.percentage,1,100);
 
-    char temp_c4[10];
-    sprintf(temp_c4,"%0.2f",displayData.lowCelVoltage);
-    drawText(temp_c4,2,100);
-
     char temp_c3[10];
-    avgPowerI[sInd2] = displayData.voltage*displayData.currentIn;
-    float avrPowerIn = movingAvg(avgPowerI,&sInd2,displayData.voltage*displayData.currentIn);
-    sprintf(temp_c3,"%-4.0f",avrPowerIn);
+    sprintf(temp_c3,"%0.2f",displayData.lowCelVoltage);
     drawText(temp_c3,3,100);
 
-    char temp_c5[20];
+    char temp_c4[10];
+    sprintf(temp_c4,"%0.2f",displayData.highCelVoltage);
+    drawText(temp_c4,2,100);
+
+    char temp_c5[10];
+    avgPowerI[sInd2] = displayData.voltage*displayData.currentIn;
+    float avrPowerIn = movingAvg(avgPowerI,&sInd2,displayData.voltage*displayData.currentIn);
+    sprintf(temp_c5,"%-4.0f",avrPowerIn);
+    drawText(temp_c5,4,100);
+
+    char temp_c6[20];
     float avrPower = movingAvg(avgPowerO,&sInd,displayData.voltage*displayData.currentOut);
 
     if (avrPower < 100 && avrPower > -100) {
-        sprintf(temp_c5, "%-4.1f ", avrPower);  // One decimal for small values
+        sprintf(temp_c6, "%-4.1f ", avrPower);  // One decimal for small values
     } else {
-        sprintf(temp_c5, "%-4.0f ", avrPower);  // No decimal for 100 and above
+        sprintf(temp_c6, "%-4.0f ", avrPower);  // No decimal for 100 and above
     }
-    drawNumberLarge(temp_c5,3,40);
+    drawNumberLarge(temp_c6,3,40);
 
-    char temp_c6[20];
+    char temp_c7[20];
     float avrSpeed = movingAvg(avgSpeed,&sInd3,gpsData.speed);
-    snprintf(temp_c6, sizeof(temp_c6), "%.1f ", avrSpeed);
-    drawNumberLarge(temp_c6,0,40);
+    snprintf(temp_c7, sizeof(temp_c7), "%.1f ", avrSpeed);
+    drawNumberLarge(temp_c7,0,40);
 
     //Update flags
     if (gpsData.fix != prevGPS) {
         prevGPS = gpsData.fix;
         if(gpsData.fix == 2 || gpsData.fix == 3) {
-            drawText("GPS",4,100);
+            drawText("GPS",5,100);
         }
         else {
-            drawText("    ",4,100);
+            drawText("    ",5,100);
         }
     }
 
     if (checkCAN != prevCAN) {
         prevCAN = checkCAN;
         if(checkCAN) {
-            drawText("CAN",6,100);
+            drawText("CAN",7,100);
         }
         else {
-            drawText("    ",6,100);
+            drawText("    ",7,100);
         }
     }
 
     if (checkLTE != prevLTE) {
         prevLTE = checkLTE;
         if(checkLTE) {
-            drawText("LTE",5,100);
+            drawText("LTE",6,100);
         }
         else {
-            drawText("    ",5,100);
+            drawText("    ",6,100);
         }
     }
 }

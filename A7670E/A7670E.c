@@ -111,6 +111,7 @@ void sendMqttData(void) {
           "\"po\":%d,"
           "\"b\":%d,"
           "\"lbv\":%.2f,"
+          "\"hbv\":%.2f,"
           "\"mt\":%.1f,"
           "\"mct\":%.1f,"
           "\"fa\":%d,"
@@ -124,6 +125,7 @@ void sendMqttData(void) {
         (int)(displayData.voltage * displayData.currentOut),
         (int)displayData.percentage,
         displayData.lowCelVoltage,
+        displayData.highCelVoltage,
         displayData.motorTemp,
         displayData.motorControllerTemp,
         displayData.foilAngle,

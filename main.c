@@ -60,7 +60,7 @@ void app_main(void) {
     initCAN();
     xTaskCreate(getCANdataTask, "getCANdataTask", 4096, NULL, 10, NULL);
 
-    //Initialize LTE and GPS 
+    //Initialize LTE and GPS
     xTaskCreate(getSimData, "getSimData", 8192, NULL, 15, NULL);
 
     while (1) {

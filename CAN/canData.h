@@ -44,6 +44,7 @@ struct displayVariables {
     float motorControllerTemp;
     float rpm;
     float lowCelVoltage;
+    float highCelVoltage;
 };
 
 void initCAN();

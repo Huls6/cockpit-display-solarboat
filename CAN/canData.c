@@ -87,7 +87,10 @@ struct displayVariables CANtoDisplayParser(enum CANID ID, uint8_t Length, uint8_
             }
         break;
         case BMS2:
-            if (Message[3] == 0xD) {
+            if (Message[3] == 0xC) {
+                temp.highCelVoltage = ((float)(((uint16_t)Message[5] << 8) | Message[4])) / 1000.0f;
+            }
+            else if (Message[3] == 0xD) {
                 temp.lowCelVoltage = ((float)(((uint16_t)Message[5] << 8) | Message[4])) / 1000.0f;
             }
         break;
