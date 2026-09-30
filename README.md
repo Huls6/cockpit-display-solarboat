@@ -1,4 +1,5 @@
 # cockpit-display-solarboat
+CONTINUED ON THE QSOLARBOAT GITHUB, SEE: https://github.com/Q-Solarboat/B2_cockpit-display-solarboat (Access required) 
 
 This code is written for project display-cockpit of the HAN Solarboat. 
 For this project there is a new display designed for in the cockpit of the boat. 
